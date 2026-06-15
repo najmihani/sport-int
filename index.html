@@ -324,49 +324,61 @@
 <script>
   const API_BASE = 'https://script.google.com/macros/s/AKfycbx9OU7okr4L2FGuuUJdA_zdHqAe5J0DJG_D34abJdVWuDxCKTAOP_61oW43fYrJD0rp/exec'; // GANTIKAN dengan URL Apps Script anda
 
-  // Fungsi panggil API
   async function fetchAPI(action, params = {}) {
     let url = `${API_BASE}?action=${action}`;
     for (let key in params) {
       if (params[key] !== undefined && params[key] !== null)
         url += `&${key}=${encodeURIComponent(params[key])}`;
     }
-    const res = await fetch(url);
-    return res.json();
-  }
-
-  // ========== JADUAL KEHANJURAN ==========
-  async function loadSchedule() {
-    const tbody = document.getElementById('scheduleBody');
-    tbody.innerHTML = '<tr><td colspan="6">Memuatkan...</td></tr>';
+    console.log("Calling:", url);
     try {
-      const data = await fetchAPI('getJadualKejohanan');
-      if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6">Tiada jadual untuk dipaparkan.</td></tr>';
-        return;
-      }
-      let html = '';
-      data.forEach(row => {
-        html += `<tr>
-          <td>${row.hari || '-'}</td>
-          <td>${row.masa || '-'}</td>
-          <td>${row.acara || '-'}</td>
-          <td>${row.kategori || '-'}</td>
-          <td>${row.pusingan || '-'}</td>
-          <td>${row.status || '-'}</td>
-        </tr>`;
-      });
-      tbody.innerHTML = html;
-    } catch(e) {
-      tbody.innerHTML = '<tr><td colspan="6">Gagal memuat jadual.</td></tr>';
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      console.log("Response:", data);
+      return data;
+    } catch (err) {
+      console.error("API Error:", err);
+      return { error: err.message };
     }
   }
 
-  // ========== KEPUTUSAN ACARA (sedia ada, ditambah baik) ==========
+  // ========== JADUAL ==========
+  async function loadSchedule() {
+    const tbody = document.getElementById('scheduleBody');
+    tbody.innerHTML = '<tr><td colspan="6">Memuatkan......</td></tr>';
+    const data = await fetchAPI('getJadualKejohanan');
+    if (data.error) {
+      tbody.innerHTML = `<tr><td colspan="6">Gagal memuat jadual: ${data.error}</td></tr>`;
+      return;
+    }
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6">Tiada jadual. Pastikan tab "Jadual" wujud dan berisi data.</td></tr>';
+      return;
+    }
+    let html = '';
+    data.forEach(row => {
+      html += `<tr>
+        <td>${row.hari || '-'}</td>
+        <td>${row.masa || '-'}</td>
+        <td>${row.acara || '-'}</td>
+        <td>${row.kategori || '-'}</td>
+        <td>${row.pusingan || '-'}</td>
+        <td>${row.status || '-'}</td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+
+  // ========== ACARA & KEPUTUSAN ==========
   async function loadAcaraList() {
     const container = document.getElementById('acaraContainer');
     container.innerHTML = '<p>Memuatkan senarai acara...</p>';
     const data = await fetchAPI('getAcaraDenganKeputusan');
+    if (data.error) {
+      container.innerHTML = `<p>Ralat: ${data.error}</p>`;
+      return;
+    }
     if (!data || data.length === 0) {
       container.innerHTML = '<p>Tiada keputusan acara buat masa ini.</p>';
       return;
@@ -390,8 +402,12 @@
   async function showKeputusanAcara(acaraId, acaraNama) {
     const results = await fetchAPI('getKeputusanAcara', { acaraId });
     const detailDiv = document.getElementById('resultsDetail');
+    if (results.error) {
+      detailDiv.innerHTML = `<div class="table-wrapper"><p>Ralat: ${results.error}</p></div>`;
+      return;
+    }
     if (!results || results.length === 0) {
-      detailDiv.innerHTML = `<div class="table-wrapper"><p style="padding:20px">Tiada keputusan untuk ${acaraNama}</p></div>`;
+      detailDiv.innerHTML = `<div class="table-wrapper"><p>Tiada keputusan untuk ${acaraNama}</p></div>`;
       return;
     }
     let html = `<div class="table-wrapper">
@@ -402,47 +418,60 @@
     results.forEach((r, idx) => {
       html += `<tr>
         <td>${idx+1}</td>
-        <td>${r.bib}</td>
-        <td>${r.nama}</td>
-        <td>${r.pasukan}</td>
-        <td>${r.masa_jarak}</td>
-        <td>${r.kedudukan}</td>
+        <td>${r.bib || '-'}</td>
+        <td>${r.nama || '-'}</td>
+        <td>${r.pasukan || '-'}</td>
+        <td>${r.masa_jarak || '-'}</td>
+        <td>${r.kedudukan || '-'}</td>
         <td>${r.pingat || '-'}</td>
       </tr>`;
     });
     html += `</tbody></table><div style="padding:1rem; text-align:center;"><button class="admin-btn" onclick="document.getElementById('resultsDetail').innerHTML=''">Tutup</button></div></div>`;
     detailDiv.innerHTML = html;
-    // scroll ke detail
     detailDiv.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // ========== ADMIN LOGIN ==========
+  // ========== LOGIN ADMIN DENGAN IKON MATA ==========
   const modal = document.getElementById('adminModal');
   const loginBtn = document.getElementById('adminLoginBtn');
   const closeModal = document.getElementById('closeModal');
   const submitPwd = document.getElementById('submitPassword');
+  const pwdInput = document.getElementById('adminPassword');
+  const loginError = document.getElementById('loginError');
+
+  // Tambah ikon mata dalam modal (di dalam HTML modal perlu diubah)
+  // Saya akan ubah struktur modal di HTML nanti
 
   loginBtn.onclick = () => { modal.style.display = 'flex'; };
   closeModal.onclick = () => { modal.style.display = 'none'; };
   window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
 
   submitPwd.onclick = async () => {
-    const pwd = document.getElementById('adminPassword').value;
+    const pwd = pwdInput.value.trim();
     if (!pwd) {
-      document.getElementById('loginError').innerText = 'Sila masukkan kata laluan.';
+      loginError.innerText = 'Sila masukkan kata laluan.';
       return;
     }
     const result = await fetchAPI('verifyAdminPassword', { password: pwd });
     if (result.success === true) {
-      // redirect ke halaman admin (anda boleh tukar URL ke admin.html yang dihosting)
+      // Redirect ke halaman admin (pastikan URL admin.html betul)
       window.open('https://sistem-kejohanan.vercel.app/admin.html', '_blank');
       modal.style.display = 'none';
-      document.getElementById('adminPassword').value = '';
-      document.getElementById('loginError').innerText = '';
+      pwdInput.value = '';
+      loginError.innerText = '';
     } else {
-      document.getElementById('loginError').innerText = 'Kata laluan salah.';
+      loginError.innerText = 'Kata laluan salah.';
     }
   };
+
+  // Tambah fungsi toggle password
+  function togglePasswordVisibility() {
+    const type = pwdInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    pwdInput.setAttribute('type', type);
+    const icon = document.getElementById('togglePwdIcon');
+    icon.classList.toggle('fa-eye');
+    icon.classList.toggle('fa-eye-slash');
+  }
 
   // ========== TAB SWITCH ==========
   const tabBtns = document.querySelectorAll('.tab-btn');
@@ -454,12 +483,8 @@
       tabBtns.forEach(b => b.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       btn.classList.add('active');
-      if (tabId === 'schedule' && document.getElementById('scheduleBody').innerHTML.includes('Memuatkan jadual')) {
-        loadSchedule();
-      }
-      if (tabId === 'results' && document.getElementById('acaraContainer').innerHTML === '') {
-        loadAcaraList();
-      }
+      if (tabId === 'schedule') loadSchedule();
+      if (tabId === 'results' && document.getElementById('acaraContainer').innerHTML === '') loadAcaraList();
     });
   });
 
