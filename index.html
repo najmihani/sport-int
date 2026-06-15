@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Keputusan Rasmi Kejohanan</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+    .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+    h2 { color: #4CAF50; }
+    .acara-list { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .acara-card { background: #f9f9f9; border: 1px solid #ccc; border-radius: 5px; padding: 10px 15px; cursor: pointer; }
+    .acara-card:hover { background: #e0e0e0; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #4CAF50; color: white; }
+    .back { cursor: pointer; background: #4CAF50; color: white; padding: 8px 16px; display: inline-block; margin-top: 20px; }
+    @media print { .acara-list, .back, h2 { display: none; } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>🏆 Keputusan Rasmi Kejohanan</h2>
+  <div id="acaraContainer" class="acara-list"></div>
+  <div id="resultsDiv"></div>
+</div>
+<script>
+  const API_BASE = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec'; // GANTI
+
+  async function fetchAPI(action, params = {}) {
+    let url = `${API_BASE}?action=${action}`;
+    for (let key in params) url += `&${key}=${encodeURIComponent(params[key])}`;
+    const res = await fetch(url);
+    return res.json();
+  }
+
+  async function loadAcara() {
+    const data = await fetchAPI('getAcaraDenganKeputusan');
+    const container = document.getElementById('acaraContainer');
+    container.innerHTML = '';
+    if (data.length === 0) { container.innerHTML = '<p>Tiada keputusan.</p>'; return; }
+    data.forEach(a => {
+      const div = document.createElement('div');
+      div.className = 'acara-card';
+      div.innerText = a.nama;
+      div.onclick = () => showResults(a.id, a.nama);
+      container.appendChild(div);
+    });
+  }
+
+  async function showResults(acaraId, acaraNama) {
+    const results = await fetchAPI('getKeputusanAcara', { acaraId });
+    let html = `<h3>${acaraNama}</h3>`;
+    if (results.length === 0) html += '<p>Tiada rekod.</p>';
+    else {
+      html += '<table><thead><tr><th>Bil</th><th>No Bib</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th></tr></thead><tbody>';
+      results.forEach((r, i) => {
+        html += `<tr><td>${i+1}</td><td>${r.bib}</td><td>${r.nama}</td><td>${r.pasukan}</td><td>${r.masa_jarak}</td><td>${r.kedudukan}</td><td>${r.pingat}</td></tr>`;
+      });
+      html += '</tbody></table><div class="back" onclick="backToList()">Kembali</div>';
+    }
+    document.getElementById('resultsDiv').innerHTML = html;
+    document.getElementById('acaraContainer').style.display = 'none';
+  }
+
+  function backToList() {
+    document.getElementById('resultsDiv').innerHTML = '';
+    document.getElementById('acaraContainer').style.display = 'flex';
+  }
+
+  loadAcara();
+</script>
+</body>
+</html>
