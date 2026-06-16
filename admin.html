@@ -364,7 +364,7 @@
                     <button class="delete-acara-btn" onclick="deleteWholeAcara('${acaraId}', '${containerId}', ${isFinal})"><i class="fas fa-trash-alt"></i> Padam Semua Rekod Acara</button>
                   </div>
                 </div>`;
-    html += '能<table><thead>\n<tr>\n<th>Bil</th><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th>\n</tr>\n</thead>\n<tbody>';
+    html += '<table><thead>\n<tr>\n<th>Bil</th><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th>\n</tr>\n</thead>\n<tbody>';
     results.forEach((r, idx) => {
       html += `<tr>
         <td>${idx+1}</td>
@@ -409,7 +409,7 @@
     const masaMap = {};
     results.forEach(r => { masaMap[r.nama] = { masa: r.masa_jarak, ked: r.kedudukan, pingat: r.pingat }; });
     let formHtml = '<form id="editForm">';
-    formHtml += '能<td><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan (auto selepas simpan)</th><th>Pingat</th></tr></thead><tbody>';
+    formHtml += '<td><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan (auto selepas simpan)</th><th>Pingat</th></tr></thead><tbody>';
     pesertaAsal.forEach((p, i) => {
       const existing = masaMap[p.nama] || {};
       formHtml += `<tr>
@@ -533,7 +533,7 @@
     } else if (!pesertaList.length) {
       document.getElementById('pesertaSADiv').innerHTML = '<p>Tiada peserta berdaftar untuk acara ini.</p>';
     } else {
-      let html = '<form id="formSA">能</table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
+      let html = '<form id="formSA"></table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
       pesertaList.forEach((p, i) => {
         html += `<tr>
           <td>${p.bib}</td>
@@ -624,7 +624,7 @@
     } else if (!pesertaList.length) {
       document.getElementById('pesertaFinalDiv').innerHTML = '<p>Tiada peserta layak ke final.</p>';
     } else {
-      let html = '<form id="formFinal">能</table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
+      let html = '<form id="formFinal"></table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
       pesertaList.forEach((p, i) => {
         html += `<tr>
           <td>${p.bib}</td>
