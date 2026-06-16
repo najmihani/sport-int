@@ -37,79 +37,173 @@
 
 <script>
   const API_BASE = 'https://script.google.com/macros/s/AKfycbx9OU7okr4L2FGuuUJdA_zdHqAe5J0DJG_D34abJdVWuDxCKTAOP_61oW43fYrJD0rp/exec';
-
   async function fetchAPI(action, params = {}) {
     let url = `${API_BASE}?action=${action}`;
-    for (let key in params) url += `&${key}=${encodeURIComponent(JSON.stringify(params[key]))}`;
-    const res = await fetch(url);
-    return res.json();
+    for (let key in params) {
+      if (params[key] !== undefined && params[key] !== null)
+        url += `&${key}=${encodeURIComponent(params[key])}`;
+    }
+    console.log("Calling:", url);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      console.log("Response:", data);
+      return data;
+    } catch (err) {
+      console.error("API Error:", err);
+      return { error: err.message };
+    }
   }
 
-  function openTab(evt, tabName) {
-    // ... fungsi tab biasa
-  }
-  document.getElementsByClassName("tablinks")[0].click();
-
-  // Separuh Akhir
-  async function loadAcaraSA() {
-    const list = await fetchAPI('getSeparuhAkhirAcara');
-    let sel = document.getElementById('acaraSA');
-    sel.innerHTML = '<option value="">-- Pilih --</option>';
-    list.forEach(a => {
-      let opt = document.createElement('option');
-      opt.value = a.id;
-      opt.text = a.nama;
-      opt.setAttribute('data-kuota', a.kuota);
-      sel.appendChild(opt);
-    });
-  }
-
-  async function loadPesertaSA() {
-    let sel = document.getElementById('acaraSA');
-    let acaraId = sel.value;
-    let kuota = sel.options[sel.selectedIndex]?.getAttribute('data-kuota');
-    if (!acaraId) return;
-    const pesertaList = await fetchAPI('getPesertaUntukAcara', { acaraId });
-    let html = '<form id="formSA"><table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
-    pesertaList.forEach((p, i) => {
+  // ========== JADUAL ==========
+  async function loadSchedule() {
+    const tbody = document.getElementById('scheduleBody');
+    tbody.innerHTML = '<tr><td colspan="6">Memuatkan......</td></tr>';
+    const data = await fetchAPI('getJadualKejohanan');
+    if (data.error) {
+      tbody.innerHTML = `<tr><td colspan="6">Gagal memuat jadual: ${data.error}</td></tr>`;
+      return;
+    }
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6">Tiada jadual. Pastikan tab "Jadual" wujud dan berisi data.</td></tr>';
+      return;
+    }
+    let html = '';
+    data.forEach(row => {
       html += `<tr>
-        <td>${p.bib}</td>
-        <td>${p.nama}</td>
-        <td>${p.pasukan}</td>
-        <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}"></td>
+        <td>${row.hari || '-'}</td>
+        <td>${row.masa || '-'}</td>
+        <td>${row.acara || '-'}</td>
+        <td>${row.kategori || '-'}</td>
+        <td>${row.pusingan || '-'}</td>
+        <td>${row.status || '-'}</td>
       </tr>`;
     });
-    html += '</tbody></table><label>Pusingan: <input type="text" name="pusingan" value="Separuh Akhir 1"></label><br>';
-    html += `<button type="button" onclick="simpanSA(${acaraId}, ${kuota})">Simpan & Ranking</button></form>`;
-    document.getElementById('pesertaSADiv').innerHTML = html;
+    tbody.innerHTML = html;
   }
 
-  async function simpanSA(acaraId, kuota) {
-    let form = document.getElementById('formSA');
-    let inputs = form.querySelectorAll('input[name^="masa_"]');
-    let pesertaData = [];
-    for (let i=0; i<inputs.length; i++) {
-      let masa = inputs[i].value.trim();
-      if (!masa) { alert('Isi semua masa'); return; }
-      pesertaData.push({
-        pendaftaran_id: inputs[i].getAttribute('data-pendaftaran'),
-        nama: inputs[i].getAttribute('data-nama'),
-        masa_jarak: masa
-      });
+  // ========== ACARA & KEPUTUSAN ==========
+  async function loadAcaraList() {
+    const container = document.getElementById('acaraContainer');
+    container.innerHTML = '<p>Memuatkan senarai acara...</p>';
+    const data = await fetchAPI('getAcaraDenganKeputusan');
+    if (data.error) {
+      container.innerHTML = `<p>Ralat: ${data.error}</p>`;
+      return;
     }
-    let pusingan = form.querySelector('input[name="pusingan"]').value;
-    const result = await fetchAPI('simpanSeparuhAkhir', {
-      acaraId, pusingan, pesertaData, kuotaFinal: kuota
+    if (!data || data.length === 0) {
+      container.innerHTML = '<p>Tiada keputusan acara buat masa ini.</p>';
+      return;
+    }
+    container.innerHTML = '';
+    data.forEach(acara => {
+      const card = document.createElement('div');
+      card.className = 'acara-card';
+      card.innerHTML = `
+        <i class="fas fa-running"></i>
+        <div class="info">
+          <strong>${acara.nama}</strong>
+          <small>Klik untuk lihat keputusan</small>
+        </div>
+      `;
+      card.onclick = () => showKeputusanAcara(acara.id, acara.nama);
+      container.appendChild(card);
     });
-    document.getElementById('statusSA').innerHTML = result.message || result;
-    loadPesertaSA();
   }
 
-  // Final (serupa, rujuk kod asal)
-  // ... Saya akan ringkaskan, anda boleh kembangkan dari pola di atas.
+  async function showKeputusanAcara(acaraId, acaraNama) {
+    const results = await fetchAPI('getKeputusanAcara', { acaraId });
+    const detailDiv = document.getElementById('resultsDetail');
+    if (results.error) {
+      detailDiv.innerHTML = `<div class="table-wrapper"><p>Ralat: ${results.error}</p></div>`;
+      return;
+    }
+    if (!results || results.length === 0) {
+      detailDiv.innerHTML = `<div class="table-wrapper"><p>Tiada keputusan untuk ${acaraNama}</p></div>`;
+      return;
+    }
+    let html = `<div class="table-wrapper">
+      <h3 style="padding:1rem 1rem 0 1rem;">${acaraNama}</h3>
+      <table>
+        <thead><tr><th>Bil</th><th>No Bib</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th></tr></thead>
+        <tbody>`;
+    results.forEach((r, idx) => {
+      html += `<tr>
+        <td>${idx+1}</td>
+        <td>${r.bib || '-'}</td>
+        <td>${r.nama || '-'}</td>
+        <td>${r.pasukan || '-'}</td>
+        <td>${r.masa_jarak || '-'}</td>
+        <td>${r.kedudukan || '-'}</td>
+        <td>${r.pingat || '-'}</td>
+      </tr>`;
+    });
+    html += `</tbody></table><div style="padding:1rem; text-align:center;"><button class="admin-btn" onclick="document.getElementById('resultsDetail').innerHTML=''">Tutup</button></div></div>`;
+    detailDiv.innerHTML = html;
+    detailDiv.scrollIntoView({ behavior: 'smooth' });
+  }
 
-  loadAcaraSA();
-  // loadAcaraFinal() juga
+  // ========== LOGIN ADMIN DENGAN IKON MATA ==========
+  const modal = document.getElementById('adminModal');
+  const loginBtn = document.getElementById('adminLoginBtn');
+  const closeModal = document.getElementById('closeModal');
+  const submitPwd = document.getElementById('submitPassword');
+  const pwdInput = document.getElementById('adminPassword');
+  const loginError = document.getElementById('loginError');
+
+  // Tambah ikon mata dalam modal (di dalam HTML modal perlu diubah)
+  // Saya akan ubah struktur modal di HTML nanti
+
+  loginBtn.onclick = () => { modal.style.display = 'flex'; };
+  closeModal.onclick = () => { modal.style.display = 'none'; };
+  window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+  submitPwd.onclick = async () => {
+    const pwd = pwdInput.value.trim();
+    if (!pwd) {
+      loginError.innerText = 'Sila masukkan kata laluan.';
+      return;
+    }
+    const result = await fetchAPI('verifyAdminPassword', { password: pwd });
+    if (result.success === true) {
+      // Redirect ke halaman admin (pastikan URL admin.html betul)
+      window.open('https://sistem-kejohanan.vercel.app/admin.html', '_blank');
+      modal.style.display = 'none';
+      pwdInput.value = '';
+      loginError.innerText = '';
+    } else {
+      loginError.innerText = 'Kata laluan salah.';
+    }
+  };
+
+  // Tambah fungsi toggle password
+  function togglePasswordVisibility() {
+    const type = pwdInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    pwdInput.setAttribute('type', type);
+    const icon = document.getElementById('togglePwdIcon');
+    icon.classList.toggle('fa-eye');
+    icon.classList.toggle('fa-eye-slash');
+  }
+
+  // ========== TAB SWITCH ==========
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const panes = document.querySelectorAll('.tab-pane');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.getAttribute('data-tab');
+      panes.forEach(pane => pane.classList.remove('active'));
+      tabBtns.forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+      if (tabId === 'schedule') loadSchedule();
+      if (tabId === 'results' && document.getElementById('acaraContainer').innerHTML === '') loadAcaraList();
+    });
+  });
+
+  // Muat awal
+  loadSchedule();
+  loadAcaraList();
 </script>
 </body>
 </html>
