@@ -20,7 +20,6 @@
       color: #0f172a;
     }
 
-    /* Container utama */
     .admin-container {
       max-width: 1400px;
       margin: 0 auto;
@@ -37,17 +36,11 @@
       margin: 0;
       font-size: 1.6rem;
       font-weight: 600;
-      letter-spacing: -0.01em;
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    h2 i {
-      font-size: 1.8rem;
-    }
-
-    /* Tab styling */
     .tab {
       background: #f8fafc;
       border-bottom: 1px solid #e2e8f0;
@@ -91,13 +84,11 @@
       border-radius: 3px 3px 0 0;
     }
 
-    /* Kandungan tab */
     .tabcontent {
       padding: 2rem;
       background: white;
     }
 
-    /* Label dan select */
     label {
       font-weight: 600;
       color: #1e293b;
@@ -122,7 +113,6 @@
       box-shadow: 0 0 0 3px rgba(42,82,152,0.2);
     }
 
-    /* Jadual */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -152,7 +142,6 @@
       background: #f8fafc;
     }
 
-    /* Butang */
     button {
       font-family: inherit;
       font-weight: 500;
@@ -161,24 +150,24 @@
       transition: all 0.2s ease;
     }
 
-    .edit-btn, .delete-btn, .save-btn, .admin-btn {
+    .edit-acara-btn, .delete-acara-btn, .save-btn, .admin-btn {
       padding: 0.4rem 0.9rem;
       border-radius: 2rem;
       font-size: 0.8rem;
       margin: 0 4px;
     }
 
-    .edit-btn {
+    .edit-acara-btn {
       background: #f59e0b;
       color: white;
     }
-    .edit-btn:hover { background: #d97706; transform: translateY(-1px); }
+    .edit-acara-btn:hover { background: #d97706; transform: translateY(-1px); }
 
-    .delete-btn {
+    .delete-acara-btn {
       background: #ef4444;
       color: white;
     }
-    .delete-btn:hover { background: #dc2626; transform: translateY(-1px); }
+    .delete-acara-btn:hover { background: #dc2626; transform: translateY(-1px); }
 
     .save-btn {
       background: #10b981;
@@ -186,19 +175,18 @@
     }
     .save-btn:hover { background: #059669; }
 
-    button[type="button"]:not(.edit-btn):not(.delete-btn):not(.save-btn) {
+    button[type="button"]:not(.edit-acara-btn):not(.delete-acara-btn):not(.save-btn) {
       background: #2a5298;
       color: white;
       padding: 0.6rem 1.2rem;
       border-radius: 2rem;
       font-weight: 500;
     }
-    button[type="button"]:not(.edit-btn):not(.delete-btn):not(.save-btn):hover {
+    button[type="button"]:not(.edit-acara-btn):not(.delete-acara-btn):not(.save-btn):hover {
       background: #1e3c72;
       transform: translateY(-1px);
     }
 
-    /* Form input masa */
     form input[type="text"], form input[type="number"] {
       width: 90px;
       text-align: center;
@@ -206,7 +194,6 @@
       margin: 0 auto;
     }
 
-    /* Status */
     .success {
       color: #10b981;
       background: #ecfdf5;
@@ -225,7 +212,6 @@
       font-weight: 500;
     }
 
-    /* Keputusan sedia ada */
     .existing-data {
       margin-top: 2rem;
       border-top: 2px dashed #cbd5e1;
@@ -238,9 +224,14 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
     }
 
-    /* Loading */
     .loading {
       position: fixed;
       top: 0;
@@ -269,7 +260,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Responsif */
     @media (max-width: 768px) {
       body { padding: 1rem; }
       .tabcontent { padding: 1rem; }
@@ -278,7 +268,8 @@
       tr { margin-bottom: 1rem; border: 1px solid #e2e8f0; border-radius: 1rem; }
       td { display: flex; justify-content: space-between; align-items: center; text-align: right; padding: 0.6rem; }
       td::before { content: attr(data-label); font-weight: 600; text-align: left; width: 40%; }
-      .edit-btn, .delete-btn { margin-top: 5px; }
+      .edit-acara-btn, .delete-acara-btn { margin-top: 5px; }
+      .action-buttons { margin-top: 1rem; }
     }
   </style>
 </head>
@@ -353,7 +344,7 @@
   document.getElementById('tabFinal').onclick = () => openTab('Final');
   openTab('SeparuhAkhir'); // default
 
-  // ================= FUNGSI PAPAR KEPUTUSAN SEDIA ADA =================
+  // ================= PAPAR KEPUTUSAN SEDIA ADA (dengan edit/padam keseluruhan acara) =================
   async function displayExistingResults(acaraId, containerId, isFinal = false) {
     const container = document.getElementById(containerId);
     if (!acaraId) {
@@ -365,100 +356,153 @@
       container.innerHTML = '<p><em>Tiada keputusan sedia ada.</em></p>';
       return;
     }
-    let html = '<h4><i class="fas fa-database"></i> Keputusan Sedia Ada:</h4>能<table>\n<thead>\n<tr>\n<th>Bil</th><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th><th>Tindakan</th>\n</tr>\n</thead>\n<tbody>';
+    // Butang untuk edit/padam keseluruhan acara
+    let html = `<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
+                  <h4><i class="fas fa-database"></i> Keputusan Sedia Ada:</h4>
+                  <div class="action-buttons">
+                    <button class="edit-acara-btn" onclick="editWholeAcara('${acaraId}', ${isFinal})"><i class="fas fa-edit"></i> Edit Semua Rekod Acara</button>
+                    <button class="delete-acara-btn" onclick="deleteWholeAcara('${acaraId}', '${containerId}', ${isFinal})"><i class="fas fa-trash-alt"></i> Padam Semua Rekod Acara</button>
+                  </div>
+                </div>`;
+    html += '能<table><thead>\n<tr>\n<th>Bil</th><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th>\n</tr>\n</thead>\n<tbody>';
     results.forEach((r, idx) => {
-      html += `<tr id="row-${r.keputusan_id || idx}">
+      html += `<tr>
         <td>${idx+1}</td>
         <td>${r.bib}</td>
         <td>${r.nama}</td>
         <td>${r.pasukan}</td>
-        <td><span class="val-masa">${r.masa_jarak}</span></td>
-        <td><span class="val-ked">${r.kedudukan}</span></td>
-        <td><span class="val-pingat">${r.pingat || '-'}</span></td>
-        <td>
-          <button class="edit-btn" data-id="${r.keputusan_id}" data-masa="${r.masa_jarak}" data-ked="${r.kedudukan}" data-pingat="${r.pingat}" onclick="editRecord('${r.keputusan_id}', this)"><i class="fas fa-edit"></i> Edit</button>
-          <button class="delete-btn" onclick="deleteRecord('${r.keputusan_id}', ${acaraId}, '${containerId}')"><i class="fas fa-trash-alt"></i> Padam</button>
-        </td>
-      </tr>`;
+        <td>${r.masa_jarak}</td>
+        <td>${r.kedudukan}</td>
+        <td>${r.pingat || '-'}</td>
+       </tr>`;
     });
     html += '</tbody></table>';
     container.innerHTML = html;
   }
 
-  // ================= KEMAS KINI REKOD =================
-  window.editRecord = function(keputusanId, btn) {
-    const row = btn.closest('tr');
-    const masaSpan = row.querySelector('.val-masa');
-    const kedSpan = row.querySelector('.val-ked');
-    const pingatSpan = row.querySelector('.val-pingat');
-    const currentMasa = masaSpan.innerText;
-    const currentKed = kedSpan.innerText;
-    const currentPingat = pingatSpan.innerText;
-    
-    masaSpan.innerHTML = `<input type="text" id="edit-masa" value="${currentMasa}" style="width:90px;">`;
-    kedSpan.innerHTML = `<input type="number" id="edit-ked" value="${currentKed}" style="width:70px;">`;
-    pingatSpan.innerHTML = `<input type="text" id="edit-pingat" value="${currentPingat !== '-' ? currentPingat : ''}" style="width:90px;" placeholder="Emas/Perak/Gangsa">`;
-    
-    const actionCell = row.cells[7];
-    actionCell.innerHTML = `<button class="save-btn" onclick="saveEdit('${keputusanId}', this)"><i class="fas fa-save"></i> Simpan</button> <button onclick="cancelEdit('${keputusanId}', this)"><i class="fas fa-times"></i> Batal</button>`;
-  };
-
-  window.saveEdit = async function(keputusanId, btn) {
-    const row = btn.closest('tr');
-    const newMasa = row.querySelector('#edit-masa').value;
-    const newKed = row.querySelector('#edit-ked').value;
-    const newPingat = row.querySelector('#edit-pingat').value;
-    if (!newMasa || !newKed) {
-      alert('Masa dan kedudukan wajib diisi');
+  // ================= EDIT KESELURUHAN ACARA =================
+  window.editWholeAcara = async function(acaraId, isFinal) {
+    // Dapatkan data sedia ada
+    const results = await fetchAPI('getKeputusanAcara', { acaraId });
+    if (results.error || !results.length) {
+      alert('Tiada data untuk diedit.');
       return;
     }
+    // Buat borang input dengan data sedia ada (sama seperti borang input biasa)
+    const pesertaData = results.map(r => ({
+      pendaftaran_id: null, // tidak diperlukan untuk edit? Kita perlu pendaftaran_id untuk update. Kita kena dapatkan dari sumber asal.
+      nama: r.nama,
+      bib: r.bib,
+      pasukan: r.pasukan,
+      masa_jarak: r.masa_jarak,
+      kedudukan: r.kedudukan,
+      pingat: r.pingat
+    }));
+    // Untuk edit, kita perlu ada pendaftaran_id. Kita boleh dapatkan dari fetchAPI('getPesertaUntukAcara') atau simpan dari awal.
+    // Lebih mudah: Kita gunakan API `getPesertaUntukAcara` untuk dapatkan pendaftaran_id, kemudian gabungkan dengan masa sedia ada.
+    const pesertaAsal = await fetchAPI('getPesertaUntukAcara', { acaraId });
+    if (pesertaAsal.error || !pesertaAsal.length) {
+      alert('Gagal mendapatkan senarai pendaftaran.');
+      return;
+    }
+    // Gabungkan masa sedia ada ke dalam pesertaAsal
+    const masaMap = {};
+    results.forEach(r => { masaMap[r.nama] = { masa: r.masa_jarak, ked: r.kedudukan, pingat: r.pingat }; });
+    let formHtml = '<form id="editForm">';
+    formHtml += '能<td><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan (auto selepas simpan)</th><th>Pingat</th></tr></thead><tbody>';
+    pesertaAsal.forEach((p, i) => {
+      const existing = masaMap[p.nama] || {};
+      formHtml += `<tr>
+        <td>${p.bib}</td>
+        <td>${p.nama}</td>
+        <td>${p.pasukan}</td>
+        <td><input type="text" name="masa_${i}" value="${existing.masa || ''}" placeholder="cth: 11.20" required></td>
+        <td><input type="number" name="ked_${i}" value="${existing.ked || ''}" placeholder="Auto" style="width:70px;"></td>
+        <td><input type="text" name="pingat_${i}" value="${existing.pingat || ''}" placeholder="Emas/Perak/Gangsa"></td>
+        <input type="hidden" name="pendaftaran_${i}" value="${p.pendaftaran_id}">
+        <input type="hidden" name="nama_${i}" value="${p.nama}">
+      </tr>`;
+    });
+    formHtml += '</tbody></table>';
+    formHtml += `<br><button type="button" onclick="submitEditAcara('${acaraId}', ${isFinal})"><i class="fas fa-save"></i> Simpan Semua Perubahan</button>`;
+    formHtml += '</form>';
+    // Gantikan pesertaSADiv atau pesertaFinalDiv dengan borang edit
+    if (isFinal) {
+      document.getElementById('pesertaFinalDiv').innerHTML = formHtml;
+      // Sembunyikan bahagian existing sementara
+      document.getElementById('existingFinal').style.display = 'none';
+    } else {
+      document.getElementById('pesertaSADiv').innerHTML = formHtml;
+      document.getElementById('existingSA').style.display = 'none';
+    }
+  };
+
+  window.submitEditAcara = async function(acaraId, isFinal) {
+    const form = document.getElementById('editForm');
+    const inputs = form.querySelectorAll('input[name^="masa_"]');
+    const pesertaData = [];
+    for (let i = 0; i < inputs.length; i++) {
+      const masa = inputs[i].value.trim();
+      if (!masa) {
+        alert('Sila isi masa/jarak untuk semua peserta');
+        return;
+      }
+      const kedInput = form.querySelector(`input[name="ked_${i}"]`).value;
+      const pingatInput = form.querySelector(`input[name="pingat_${i}"]`).value;
+      pesertaData.push({
+        pendaftaran_id: form.querySelector(`input[name="pendaftaran_${i}"]`).value,
+        nama: form.querySelector(`input[name="nama_${i}"]`).value,
+        masa_jarak: masa,
+        kedudukan: kedInput ? parseInt(kedInput) : null, // jika user isi, guna; jika tidak, sistem akan kira ranking
+        pingat: pingatInput || ''
+      });
+    }
     showLoading(true);
-    const result = await fetchAPI('updateKeputusan', {
-      keputusan_id: keputusanId,
-      masa_jarak: newMasa,
-      kedudukan: parseInt(newKed),
-      pingat: newPingat || ''
+    // Panggil API updateKeputusanAcara (keseluruhan)
+    const result = await fetchAPI('updateKeputusanAcara', {
+      acaraId: acaraId,
+      isFinal: isFinal,
+      pesertaData: pesertaData
     });
     showLoading(false);
     if (result.error) {
       alert('Gagal kemas kini: ' + result.error);
     } else {
       alert('Berjaya dikemas kini');
-      const acaraSelect = document.querySelector('.tabcontent.active select');
-      const acaraId = acaraSelect.value;
-      const containerId = acaraSelect.closest('.tabcontent').querySelector('.existing-data').id;
-      displayExistingResults(acaraId, containerId, containerId.includes('Final'));
-    }
-  };
-
-  window.cancelEdit = function(keputusanId, btn) {
-    const row = btn.closest('tr');
-    const acaraSelect = document.querySelector('.tabcontent.active select');
-    const acaraId = acaraSelect.value;
-    const containerId = acaraSelect.closest('.tabcontent').querySelector('.existing-data').id;
-    displayExistingResults(acaraId, containerId, containerId.includes('Final'));
-  };
-
-  // ================= PADAM REKOD =================
-  window.deleteRecord = async function(keputusanId, acaraId, containerId) {
-    if (!confirm('Anda pasti mahu padam rekod ini? Tindakan ini tidak boleh dibatalkan.')) return;
-    showLoading(true);
-    const result = await fetchAPI('deleteKeputusan', { keputusan_id: keputusanId });
-    showLoading(false);
-    if (result.error) {
-      alert('Gagal padam: ' + result.error);
-    } else {
-      alert('Rekod berjaya dipadam');
-      displayExistingResults(acaraId, containerId, containerId.includes('Final'));
-      const acaraSelect = document.getElementById(containerId.includes('SA') ? 'acaraSA' : 'acaraFinal');
-      if (acaraSelect.value == acaraId) {
-        if (containerId.includes('SA')) loadPesertaSA();
-        else loadPesertaFinal();
+      // Refresh borang asal
+      if (isFinal) {
+        document.getElementById('pesertaFinalDiv').innerHTML = ''; // kosongkan
+        document.getElementById('existingFinal').style.display = 'block';
+        loadPesertaFinal();
+      } else {
+        document.getElementById('pesertaSADiv').innerHTML = '';
+        document.getElementById('existingSA').style.display = 'block';
+        loadPesertaSA();
       }
     }
   };
 
-  // ================= SEPARUH AKHIR =================
+  // ================= PADAM KESELURUHAN ACARA =================
+  window.deleteWholeAcara = async function(acaraId, containerId, isFinal) {
+    if (!confirm('ANDA PASTI MAHU PADAM SEMUA REKOD KEPUTUSAN UNTUK ACARA INI? TINDAKAN INI TIDAK BOLEH DIBATALKAN.')) return;
+    showLoading(true);
+    const result = await fetchAPI('deleteKeputusanAcara', { acaraId: acaraId });
+    showLoading(false);
+    if (result.error) {
+      alert('Gagal padam: ' + result.error);
+    } else {
+      alert('Semua rekod keputusan untuk acara ini berjaya dipadam.');
+      displayExistingResults(acaraId, containerId, isFinal);
+      // Refresh juga borang input jika ada
+      if (containerId.includes('SA')) {
+        if (document.getElementById('acaraSA').value == acaraId) loadPesertaSA();
+      } else {
+        if (document.getElementById('acaraFinal').value == acaraId) loadPesertaFinal();
+      }
+    }
+  };
+
+  // ================= SEPARUH AKHIR (tidak berubah) =================
   async function loadAcaraSA() {
     const list = await fetchAPI('getSeparuhAkhirAcara');
     const sel = document.getElementById('acaraSA');
@@ -489,7 +533,7 @@
     } else if (!pesertaList.length) {
       document.getElementById('pesertaSADiv').innerHTML = '<p>Tiada peserta berdaftar untuk acara ini.</p>';
     } else {
-      let html = '<form id="formSA">能<table>\n<thead>\n<tr>\n<th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th>\n</tr>\n</thead>\n<tbody>';
+      let html = '<form id="formSA">能</table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
       pesertaList.forEach((p, i) => {
         html += `<tr>
           <td>${p.bib}</td>
@@ -545,7 +589,7 @@
     setTimeout(() => statusDiv.innerHTML = '', 3000);
   };
 
-  // ================= FINAL =================
+  // ================= FINAL (tidak berubah) =================
   async function loadAcaraFinal() {
     const list = await fetchAPI('getFinalAcara');
     const sel = document.getElementById('acaraFinal');
@@ -580,7 +624,7 @@
     } else if (!pesertaList.length) {
       document.getElementById('pesertaFinalDiv').innerHTML = '<p>Tiada peserta layak ke final.</p>';
     } else {
-      let html = '<form id="formFinal">能<table>\n<thead>\n<tr>\n<th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th>\n</tr>\n</thead>\n<tbody>';
+      let html = '<form id="formFinal">能</table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
       pesertaList.forEach((p, i) => {
         html += `<tr>
           <td>${p.bib}</td>
