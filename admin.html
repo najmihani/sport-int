@@ -1,168 +1,46 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - Input Keputusan Kejohanan</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Admin - Input Keputusan</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f1f5f9;
-      padding: 2rem;
-      color: #0f172a;
-    }
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .tabs {
-      display: flex;
-      gap: 0.5rem;
-      border-bottom: 2px solid #cbd5e1;
-      margin-bottom: 2rem;
-    }
-    .tab-btn {
-      background: transparent;
-      border: none;
-      padding: 0.75rem 1.8rem;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #475569;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .tab-btn.active {
-      color: #2a5298;
-      border-bottom: 3px solid #2a5298;
-      margin-bottom: -2px;
-    }
-    .tab-pane {
-      display: none;
-    }
-    .tab-pane.active {
-      display: block;
-    }
-    .card {
-      background: white;
-      border-radius: 24px;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    select, input, button {
-      font-family: inherit;
-      padding: 0.6rem 1rem;
-      border-radius: 40px;
-      border: 1px solid #cbd5e1;
-      background: white;
-    }
-    select {
-      min-width: 250px;
-    }
-    button {
-      background: #2a5298;
-      color: white;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    button:hover {
-      background: #1e3c72;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th, td {
-      border: 1px solid #e2e8f0;
-      padding: 0.75rem;
-      text-align: center;
-    }
-    th {
-      background: #f8fafc;
-      font-weight: 600;
-    }
-    input[type="text"] {
-      width: 100px;
-    }
-    .status {
-      margin-top: 1rem;
-      padding: 0.5rem;
-      border-radius: 40px;
-    }
-    .success {
-      background: #dcfce7;
-      color: #166534;
-    }
-    .error {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 2px solid #e2e8f0;
-      border-top-color: #2a5298;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      margin-left: 10px;
-      vertical-align: middle;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    body { font-family: Arial; margin: 20px; }
+    .tab { overflow: hidden; border-bottom: 1px solid #ccc; }
+    .tab button { background-color: inherit; float: left; border: none; outline: none; cursor: pointer; padding: 10px 20px; transition: 0.3s; }
+    .tab button:hover { background-color: #ddd; }
+    .tab button.active { background-color: #4CAF50; color: white; }
+    .tabcontent { display: none; padding: 20px; border: 1px solid #ccc; border-top: none; }
+    table, th, td { border: 1px solid #ccc; border-collapse: collapse; padding: 8px; }
+    th { background-color: #f2f2f2; }
+    input, select { width: 100%; padding: 5px; box-sizing: border-box; }
+    button { margin-top: 10px; padding: 8px 16px; cursor: pointer; }
+    .success { color: green; margin-top: 10px; }
+    .error { color: red; }
+    .loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: white; padding: 20px; border: 1px solid #ccc; z-index: 1000; }
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>👨‍💼 Panel Pentadbir Kejohanan</h1>
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="separuh">🏃 Separuh Akhir</button>
-    <button class="tab-btn" data-tab="final">🥇 Final</button>
-  </div>
-
-  <!-- Separuh Akhir -->
-  <div id="separuh" class="tab-pane active">
-    <div class="card">
-      <h3>Input Keputusan Separuh Akhir</h3>
-      <div style="margin: 1rem 0;">
-        <label>Pilih Acara Separuh Akhir: </label>
-        <select id="acaraSA"></select>
-        <button id="loadSA" style="margin-left: 10px;">Muat Peserta</button>
-      </div>
-      <div id="saFormContainer"></div>
-      <div id="saStatus" class="status"></div>
-    </div>
-  </div>
-
-  <!-- Final -->
-  <div id="final" class="tab-pane">
-    <div class="card">
-      <h3>Input Keputusan Final</h3>
-      <div style="margin: 1rem 0;">
-        <label>Pilih Acara Final: </label>
-        <select id="acaraFinal"></select>
-        <button id="loadFinal" style="margin-left: 10px;">Muat Peserta Layak</button>
-      </div>
-      <div id="finalFormContainer"></div>
-      <div id="finalStatus" class="status"></div>
-    </div>
-  </div>
+<h2>Panel Admin Kejohanan</h2>
+<div class="tab">
+  <button class="tablinks" id="tabSA">Separuh Akhir</button>
+  <button class="tablinks" id="tabFinal">Final</button>
 </div>
+
+<div id="SeparuhAkhir" class="tabcontent">
+  <h3>Input Separuh Akhir</h3>
+  <label>Pilih Acara:</label> <select id="acaraSA" onchange="loadPesertaSA()"></select>
+  <div id="pesertaSADiv"></div>
+  <div id="statusSA" class="success"></div>
+</div>
+
+<div id="Final" class="tabcontent">
+  <h3>Input Final</h3>
+  <label>Pilih Acara Final:</label> <select id="acaraFinal" onchange="loadPesertaFinal()"></select>
+  <div id="pesertaFinalDiv"></div>
+  <div id="statusFinal" class="success"></div>
+</div>
+
+<div class="loading" id="loading">Memproses...</div>
 
 <script>
   // ================= KONFIGURASI =================
@@ -171,201 +49,219 @@
   async function fetchAPI(action, params = {}) {
     let url = `${API_BASE}?action=${action}`;
     for (let key in params) {
-      if (params[key] !== undefined && params[key] !== null) {
-        url += `&${key}=${encodeURIComponent(JSON.stringify(params[key]))}`;
-      }
+      let value = params[key];
+      if (typeof value === 'object') value = JSON.stringify(value);
+      url += `&${key}=${encodeURIComponent(value)}`;
     }
-    const res = await fetch(url);
-    return res.json();
+    try {
+      const res = await fetch(url);
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return { error: err.message };
+    }
   }
 
-  // ========== FUNGSI TAB ==========
-  function openTab(tabId) {
-    document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+  function showLoading(show) {
+    document.getElementById('loading').style.display = show ? 'flex' : 'none';
   }
 
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      openTab(btn.getAttribute('data-tab'));
-    });
-  });
+  // ================= TAB SWITCHING =================
+  function openTab(tabName) {
+    const tabs = document.getElementsByClassName('tabcontent');
+    for (let i = 0; i < tabs.length; i++) tabs[i].style.display = 'none';
+    const btns = document.getElementsByClassName('tablinks');
+    for (let i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    document.getElementById(tabName).style.display = 'block';
+    if (tabName === 'SeparuhAkhir') document.getElementById('tabSA').classList.add('active');
+    else document.getElementById('tabFinal').classList.add('active');
+  }
 
-  // ========== SEPARUH AKHIR ==========
+  document.getElementById('tabSA').onclick = () => openTab('SeparuhAkhir');
+  document.getElementById('tabFinal').onclick = () => openTab('Final');
+  openTab('SeparuhAkhir'); // default
+
+  // ================= SEPARUH AKHIR =================
   async function loadAcaraSA() {
+    const list = await fetchAPI('getSeparuhAkhirAcara');
     const sel = document.getElementById('acaraSA');
-    sel.innerHTML = '<option>Memuatkan...</option>';
-    const data = await fetchAPI('getSeparuhAkhirAcara');
-    if (data.error) {
-      sel.innerHTML = '<option>Ralat memuat</option>';
+    sel.innerHTML = '<option value="">-- Pilih Acara --</option>';
+    if (list.error) {
+      sel.innerHTML += `<option disabled>Ralat: ${list.error}</option>`;
       return;
     }
-    sel.innerHTML = '<option value="">-- Pilih Acara --</option>';
-    data.forEach(ac => {
+    list.forEach(a => {
       const opt = document.createElement('option');
-      opt.value = ac.id;
-      opt.textContent = ac.nama;
-      opt.dataset.kuota = ac.kuota;
+      opt.value = a.id;
+      opt.text = a.nama;
+      opt.setAttribute('data-kuota', a.kuota);
       sel.appendChild(opt);
     });
   }
 
-  async function loadPesertaSA() {
-    const acaraId = document.getElementById('acaraSA').value;
-    const kuota = document.getElementById('acaraSA').selectedOptions[0]?.dataset.kuota;
-    if (!acaraId) {
-      document.getElementById('saFormContainer').innerHTML = '<p class="error">Sila pilih acara.</p>';
-      return;
-    }
-    document.getElementById('saFormContainer').innerHTML = '<div class="loading"></div> Memuatkan peserta...';
+  window.loadPesertaSA = async function() {
+    const sel = document.getElementById('acaraSA');
+    const acaraId = sel.value;
+    if (!acaraId) return;
+    const kuota = sel.options[sel.selectedIndex]?.getAttribute('data-kuota');
+    showLoading(true);
     const pesertaList = await fetchAPI('getPesertaUntukAcara', { acaraId });
+    showLoading(false);
     if (pesertaList.error) {
-      document.getElementById('saFormContainer').innerHTML = `<p class="error">Ralat: ${pesertaList.error}</p>`;
+      document.getElementById('pesertaSADiv').innerHTML = `<p class="error">${pesertaList.error}</p>`;
       return;
     }
     if (!pesertaList.length) {
-      document.getElementById('saFormContainer').innerHTML = '<p>Tiada peserta berdaftar untuk acara ini.</p>';
+      document.getElementById('pesertaSADiv').innerHTML = '<p>Tiada peserta berdaftar untuk acara ini.</p>';
       return;
     }
-    let html = `<form id="formSA">
-      <table>
-        <thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead>
-        <tbody>`;
-    pesertaList.forEach((p, idx) => {
+    let html = '<form id="formSA">';
+    html += '能<table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
+    pesertaList.forEach((p, i) => {
       html += `<tr>
         <td>${p.bib}</td>
         <td>${p.nama}</td>
         <td>${p.pasukan}</td>
-        <td><input type="text" name="masa" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" placeholder="cth: 11.20" required></td>
+        <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required></td>
       </tr>`;
     });
-    html += `</tbody></table>
-      <div style="margin-top:1rem;"><label>Pusingan: <input type="text" id="pusinganSA" value="Separuh Akhir 1" placeholder="cth: Separuh Akhir 1"></label></div>
-      <button type="button" id="simpanSA">Simpan & Kira Ranking</button>
-    </form>`;
-    document.getElementById('saFormContainer').innerHTML = html;
-    document.getElementById('simpanSA').onclick = () => simpanSeparuhAkhir(acaraId, kuota);
-  }
+    html += '</tbody></table>';
+    html += '<label>Pusingan: <input type="text" name="pusingan" value="Separuh Akhir 1"></label><br>';
+    html += `<button type="button" onclick="simpanSA(${acaraId}, ${kuota})">Simpan & Ranking</button>`;
+    html += '</form>';
+    document.getElementById('pesertaSADiv').innerHTML = html;
+  };
 
-  async function simpanSeparuhAkhir(acaraId, kuota) {
+  window.simpanSA = async function(acaraId, kuota) {
     const form = document.getElementById('formSA');
-    const inputs = form.querySelectorAll('input[name="masa"]');
+    const inputs = form.querySelectorAll('input[name^="masa_"]');
     const pesertaData = [];
-    for (let inp of inputs) {
-      let masa = inp.value.trim();
+    for (let i = 0; i < inputs.length; i++) {
+      const masa = inputs[i].value.trim();
       if (!masa) {
-        document.getElementById('saStatus').innerHTML = '<span class="error">Sila isi semua masa/jarak.</span>';
+        alert('Sila isi masa/jarak untuk semua peserta');
         return;
       }
       pesertaData.push({
-        pendaftaran_id: inp.dataset.pendaftaran,
-        nama: inp.dataset.nama,
+        pendaftaran_id: inputs[i].getAttribute('data-pendaftaran'),
+        nama: inputs[i].getAttribute('data-nama'),
         masa_jarak: masa
       });
     }
-    const pusingan = document.getElementById('pusinganSA').value;
-    document.getElementById('saStatus').innerHTML = '<span class="loading"></span> Menyimpan...';
-    const result = await fetchAPI('simpanSeparuhAkhir', { acaraId, pusingan, pesertaData, kuotaFinal: kuota });
-    if (result.error) {
-      document.getElementById('saStatus').innerHTML = `<span class="error">Ralat: ${result.error}</span>`;
-    } else {
-      document.getElementById('saStatus').innerHTML = '<span class="success">✅ Keputusan disimpan. Ranking dan kelayakan dikira.</span>';
-      // reload peserta list
-      setTimeout(() => loadPesertaSA(), 1500);
-    }
-  }
-
-  // ========== FINAL ==========
-  async function loadAcaraFinal() {
-    const sel = document.getElementById('acaraFinal');
-    sel.innerHTML = '<option>Memuatkan...</option>';
-    const data = await fetchAPI('getFinalAcara');
-    if (data.error) {
-      sel.innerHTML = '<option>Ralat memuat</option>';
+    const pusingan = form.querySelector('input[name="pusingan"]').value;
+    if (!pusingan) {
+      alert('Sila masukkan pusingan');
       return;
     }
+    showLoading(true);
+    const result = await fetchAPI('simpanSeparuhAkhir', {
+      acaraId: acaraId,
+      pusingan: pusingan,
+      pesertaData: pesertaData,
+      kuotaFinal: kuota
+    });
+    showLoading(false);
+    const statusDiv = document.getElementById('statusSA');
+    if (result.error) {
+      statusDiv.innerHTML = `<span class="error">Ralat: ${result.error}</span>`;
+    } else {
+      statusDiv.innerHTML = `<span class="success">${result.message || 'Berjaya disimpan'}</span>`;
+      // Refresh senarai peserta
+      loadPesertaSA();
+    }
+    setTimeout(() => statusDiv.innerHTML = '', 3000);
+  };
+
+  // ================= FINAL =================
+  async function loadAcaraFinal() {
+    const list = await fetchAPI('getFinalAcara');
+    const sel = document.getElementById('acaraFinal');
     sel.innerHTML = '<option value="">-- Pilih Acara Final --</option>';
-    data.forEach(ac => {
+    if (list.error) {
+      sel.innerHTML += `<option disabled>Ralat: ${list.error}</option>`;
+      return;
+    }
+    list.forEach(a => {
       const opt = document.createElement('option');
-      opt.value = ac.id;
-      opt.textContent = ac.nama;
-      opt.dataset.induk = ac.acara_induk;
+      opt.value = a.id;
+      opt.text = a.nama;
+      opt.setAttribute('data-induk', a.acara_induk);
       sel.appendChild(opt);
     });
   }
 
-  async function loadPesertaFinal() {
+  window.loadPesertaFinal = async function() {
     const sel = document.getElementById('acaraFinal');
     const acaraId = sel.value;
-    const indukId = sel.selectedOptions[0]?.dataset.induk;
-    if (!acaraId) {
-      document.getElementById('finalFormContainer').innerHTML = '<p class="error">Sila pilih acara final.</p>';
+    if (!acaraId) return;
+    const indukId = sel.options[sel.selectedIndex]?.getAttribute('data-induk');
+    if (!indukId) {
+      alert('Acara final ini tidak mempunyai acara induk (separuh akhir).');
       return;
     }
-    document.getElementById('finalFormContainer').innerHTML = '<div class="loading"></div> Memuatkan peserta layak...';
+    showLoading(true);
     const pesertaList = await fetchAPI('getPesertaLayakUntukFinal', { acaraFinalId: acaraId, acaraIndukId: indukId });
+    showLoading(false);
     if (pesertaList.error) {
-      document.getElementById('finalFormContainer').innerHTML = `<p class="error">Ralat: ${pesertaList.error}</p>`;
+      document.getElementById('pesertaFinalDiv').innerHTML = `<p class="error">${pesertaList.error}</p>`;
       return;
     }
     if (!pesertaList.length) {
-      document.getElementById('finalFormContainer').innerHTML = '<p>Tiada peserta layak (semua belum direkod atau tiada kelayakan).</p>';
+      document.getElementById('pesertaFinalDiv').innerHTML = '<p>Tiada peserta layak ke final.</p>';
       return;
     }
-    let html = `<form id="formFinal">
-      <table>
-        <thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead>
-        <tbody>`;
-    pesertaList.forEach((p, idx) => {
+    let html = '<form id="formFinal">';
+    html += '能<table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
+    pesertaList.forEach((p, i) => {
       html += `<tr>
         <td>${p.bib}</td>
         <td>${p.nama}</td>
         <td>${p.pasukan}</td>
-        <td><input type="text" name="masa" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" placeholder="cth: 10.95" required></td>
+        <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required></td>
       </tr>`;
     });
-    html += `</tbody></table>
-      <button type="button" id="simpanFinal">Simpan Keputusan Final</button>
-    </form>`;
-    document.getElementById('finalFormContainer').innerHTML = html;
-    document.getElementById('simpanFinal').onclick = () => simpanFinal(acaraId);
-  }
+    html += '</tbody></table>';
+    html += `<button type="button" onclick="simpanFinal(${acaraId})">Simpan Keputusan Final</button>`;
+    html += '</form>';
+    document.getElementById('pesertaFinalDiv').innerHTML = html;
+  };
 
-  async function simpanFinal(acaraId) {
+  window.simpanFinal = async function(acaraId) {
     const form = document.getElementById('formFinal');
-    const inputs = form.querySelectorAll('input[name="masa"]');
+    const inputs = form.querySelectorAll('input[name^="masa_"]');
     const pesertaData = [];
-    for (let inp of inputs) {
-      let masa = inp.value.trim();
+    for (let i = 0; i < inputs.length; i++) {
+      const masa = inputs[i].value.trim();
       if (!masa) {
-        document.getElementById('finalStatus').innerHTML = '<span class="error">Sila isi semua masa/jarak.</span>';
+        alert('Sila isi masa/jarak untuk semua peserta final');
         return;
       }
       pesertaData.push({
-        pendaftaran_id: inp.dataset.pendaftaran,
-        nama: inp.dataset.nama,
+        pendaftaran_id: inputs[i].getAttribute('data-pendaftaran'),
+        nama: inputs[i].getAttribute('data-nama'),
         masa_jarak: masa
       });
     }
-    document.getElementById('finalStatus').innerHTML = '<span class="loading"></span> Menyimpan...';
-    const result = await fetchAPI('simpanFinal', { acaraFinalId: acaraId, pusingan: "Final", pesertaData });
+    showLoading(true);
+    const result = await fetchAPI('simpanFinal', {
+      acaraFinalId: acaraId,
+      pusingan: 'Final',
+      pesertaData: pesertaData
+    });
+    showLoading(false);
+    const statusDiv = document.getElementById('statusFinal');
     if (result.error) {
-      document.getElementById('finalStatus').innerHTML = `<span class="error">Ralat: ${result.error}</span>`;
+      statusDiv.innerHTML = `<span class="error">Ralat: ${result.error}</span>`;
     } else {
-      document.getElementById('finalStatus').innerHTML = '<span class="success">✅ Keputusan final disimpan. Pingat ditetapkan.</span>';
-      setTimeout(() => loadPesertaFinal(), 1500);
+      statusDiv.innerHTML = `<span class="success">${result.message || 'Berjaya disimpan'}</span>`;
+      loadPesertaFinal(); // refresh
     }
-  }
+    setTimeout(() => statusDiv.innerHTML = '', 3000);
+  };
 
-  // ========== INIT ==========
-  (function init() {
-    loadAcaraSA();
-    loadAcaraFinal();
-    document.getElementById('loadSA').addEventListener('click', loadPesertaSA);
-    document.getElementById('loadFinal').addEventListener('click', loadPesertaFinal);
-  })();
+  // Inisialisasi
+  loadAcaraSA();
+  loadAcaraFinal();
 </script>
 </body>
 </html>
