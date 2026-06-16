@@ -17,6 +17,11 @@
     .success { color: green; margin-top: 10px; }
     .error { color: red; }
     .loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: white; padding: 20px; border: 1px solid #ccc; z-index: 1000; }
+    .edit-mode { background-color: #fff3e0; }
+    .delete-btn { background-color: #ff4444; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 4px; }
+    .edit-btn { background-color: #ffaa00; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 4px; }
+    .save-btn { background-color: #4CAF50; color: white; }
+    .existing-data { margin-top: 20px; border-top: 2px solid #ccc; padding-top: 10px; }
   </style>
 </head>
 <body>
@@ -31,6 +36,7 @@
   <label>Pilih Acara:</label> <select id="acaraSA" onchange="loadPesertaSA()"></select>
   <div id="pesertaSADiv"></div>
   <div id="statusSA" class="success"></div>
+  <div id="existingSA" class="existing-data"></div>
 </div>
 
 <div id="Final" class="tabcontent">
@@ -38,6 +44,7 @@
   <label>Pilih Acara Final:</label> <select id="acaraFinal" onchange="loadPesertaFinal()"></select>
   <div id="pesertaFinalDiv"></div>
   <div id="statusFinal" class="success"></div>
+  <div id="existingFinal" class="existing-data"></div>
 </div>
 
 <div class="loading" id="loading">Memproses...</div>
@@ -81,6 +88,114 @@
   document.getElementById('tabFinal').onclick = () => openTab('Final');
   openTab('SeparuhAkhir'); // default
 
+  // ================= FUNGSI PAPAR KEPUTUSAN SEDIA ADA =================
+  async function displayExistingResults(acaraId, containerId, isFinal = false) {
+    const container = document.getElementById(containerId);
+    if (!acaraId) {
+      container.innerHTML = '';
+      return;
+    }
+    const results = await fetchAPI('getKeputusanAcara', { acaraId });
+    if (results.error || !results.length) {
+      container.innerHTML = '<p><em>Tiada keputusan sedia ada.</em></p>';
+      return;
+    }
+    let html = '<h4>Keputusan Sedia Ada:</h4><table><thead><tr><th>Bil</th><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th><th>Tindakan</th></tr></thead><tbody>';
+    results.forEach((r, idx) => {
+      html += `<tr id="row-${r.keputusan_id || idx}">
+        <td>${idx+1}</td>
+        <td>${r.bib}</td>
+        <td>${r.nama}</td>
+        <td>${r.pasukan}</td>
+        <td><span class="val-masa">${r.masa_jarak}</span></td>
+        <td><span class="val-ked">${r.kedudukan}</span></td>
+        <td><span class="val-pingat">${r.pingat || '-'}</span></td>
+        <td>
+          <button class="edit-btn" data-id="${r.keputusan_id}" data-masa="${r.masa_jarak}" data-ked="${r.kedudukan}" data-pingat="${r.pingat}" onclick="editRecord('${r.keputusan_id}', this)">Edit</button>
+          <button class="delete-btn" onclick="deleteRecord('${r.keputusan_id}', ${acaraId}, '${containerId}')">Padam</button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  // ================= KEMAS KINI REKOD =================
+  window.editRecord = function(keputusanId, btn) {
+    const row = btn.closest('tr');
+    const masaSpan = row.querySelector('.val-masa');
+    const kedSpan = row.querySelector('.val-ked');
+    const pingatSpan = row.querySelector('.val-pingat');
+    const currentMasa = masaSpan.innerText;
+    const currentKed = kedSpan.innerText;
+    const currentPingat = pingatSpan.innerText;
+    
+    // Ganti dengan input
+    masaSpan.innerHTML = `<input type="text" id="edit-masa" value="${currentMasa}" style="width:80px;">`;
+    kedSpan.innerHTML = `<input type="number" id="edit-ked" value="${currentKed}" style="width:60px;">`;
+    pingatSpan.innerHTML = `<input type="text" id="edit-pingat" value="${currentPingat !== '-' ? currentPingat : ''}" style="width:80px;" placeholder="Emas/Perak/Gangsa">`;
+    
+    const actionCell = row.cells[7];
+    actionCell.innerHTML = `<button class="save-btn" onclick="saveEdit('${keputusanId}', this)">Simpan</button> <button onclick="cancelEdit('${keputusanId}', this)">Batal</button>`;
+  };
+
+  window.saveEdit = async function(keputusanId, btn) {
+    const row = btn.closest('tr');
+    const newMasa = row.querySelector('#edit-masa').value;
+    const newKed = row.querySelector('#edit-ked').value;
+    const newPingat = row.querySelector('#edit-pingat').value;
+    if (!newMasa || !newKed) {
+      alert('Masa dan kedudukan wajib diisi');
+      return;
+    }
+    showLoading(true);
+    const result = await fetchAPI('updateKeputusan', {
+      keputusan_id: keputusanId,
+      masa_jarak: newMasa,
+      kedudukan: parseInt(newKed),
+      pingat: newPingat || ''
+    });
+    showLoading(false);
+    if (result.error) {
+      alert('Gagal kemas kini: ' + result.error);
+    } else {
+      alert('Berjaya dikemas kini');
+      // Refresh paparan keputusan sedia ada
+      const acaraSelect = document.querySelector('.tabcontent.active select');
+      const acaraId = acaraSelect.value;
+      const containerId = acaraSelect.closest('.tabcontent').querySelector('.existing-data').id;
+      displayExistingResults(acaraId, containerId, containerId.includes('Final'));
+    }
+  };
+
+  window.cancelEdit = function(keputusanId, btn) {
+    const row = btn.closest('tr');
+    const acaraSelect = document.querySelector('.tabcontent.active select');
+    const acaraId = acaraSelect.value;
+    const containerId = acaraSelect.closest('.tabcontent').querySelector('.existing-data').id;
+    displayExistingResults(acaraId, containerId, containerId.includes('Final'));
+  };
+
+  // ================= PADAM REKOD =================
+  window.deleteRecord = async function(keputusanId, acaraId, containerId) {
+    if (!confirm('Anda pasti mahu padam rekod ini? Tindakan ini tidak boleh dibatalkan.')) return;
+    showLoading(true);
+    const result = await fetchAPI('deleteKeputusan', { keputusan_id: keputusanId });
+    showLoading(false);
+    if (result.error) {
+      alert('Gagal padam: ' + result.error);
+    } else {
+      alert('Rekod berjaya dipadam');
+      displayExistingResults(acaraId, containerId, containerId.includes('Final'));
+      // Jika acara yang dipadam adalah yang sedang dalam borang input, refresh juga borang input
+      const acaraSelect = document.getElementById(containerId.includes('SA') ? 'acaraSA' : 'acaraFinal');
+      if (acaraSelect.value == acaraId) {
+        if (containerId.includes('SA')) loadPesertaSA();
+        else loadPesertaFinal();
+      }
+    }
+  };
+
   // ================= SEPARUH AKHIR =================
   async function loadAcaraSA() {
     const list = await fetchAPI('getSeparuhAkhirAcara');
@@ -109,27 +224,27 @@
     showLoading(false);
     if (pesertaList.error) {
       document.getElementById('pesertaSADiv').innerHTML = `<p class="error">${pesertaList.error}</p>`;
-      return;
-    }
-    if (!pesertaList.length) {
+    } else if (!pesertaList.length) {
       document.getElementById('pesertaSADiv').innerHTML = '<p>Tiada peserta berdaftar untuk acara ini.</p>';
-      return;
+    } else {
+      let html = '<form id="formSA">';
+      html += '能<tr><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
+      pesertaList.forEach((p, i) => {
+        html += `<tr>
+          <td>${p.bib}</td>
+          <td>${p.nama}</td>
+          <td>${p.pasukan}</td>
+          <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required></td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      html += '<label>Pusingan: <input type="text" name="pusingan" value="Separuh Akhir 1"></label><br>';
+      html += `<button type="button" onclick="simpanSA(${acaraId}, ${kuota})">Simpan & Ranking</button>`;
+      html += '</form>';
+      document.getElementById('pesertaSADiv').innerHTML = html;
     }
-    let html = '<form id="formSA">';
-    html += '能<table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
-    pesertaList.forEach((p, i) => {
-      html += `<tr>
-        <td>${p.bib}</td>
-        <td>${p.nama}</td>
-        <td>${p.pasukan}</td>
-        <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required></td>
-      </tr>`;
-    });
-    html += '</tbody></table>';
-    html += '<label>Pusingan: <input type="text" name="pusingan" value="Separuh Akhir 1"></label><br>';
-    html += `<button type="button" onclick="simpanSA(${acaraId}, ${kuota})">Simpan & Ranking</button>`;
-    html += '</form>';
-    document.getElementById('pesertaSADiv').innerHTML = html;
+    // Papar keputusan sedia ada
+    displayExistingResults(acaraId, 'existingSA', false);
   };
 
   window.simpanSA = async function(acaraId, kuota) {
@@ -166,7 +281,7 @@
       statusDiv.innerHTML = `<span class="error">Ralat: ${result.error}</span>`;
     } else {
       statusDiv.innerHTML = `<span class="success">${result.message || 'Berjaya disimpan'}</span>`;
-      // Refresh senarai peserta
+      // Refresh borang dan paparan sedia ada
       loadPesertaSA();
     }
     setTimeout(() => statusDiv.innerHTML = '', 3000);
@@ -204,26 +319,26 @@
     showLoading(false);
     if (pesertaList.error) {
       document.getElementById('pesertaFinalDiv').innerHTML = `<p class="error">${pesertaList.error}</p>`;
-      return;
-    }
-    if (!pesertaList.length) {
+    } else if (!pesertaList.length) {
       document.getElementById('pesertaFinalDiv').innerHTML = '<p>Tiada peserta layak ke final.</p>';
-      return;
+    } else {
+      let html = '<form id="formFinal">';
+      html += '能<tr><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
+      pesertaList.forEach((p, i) => {
+        html += `<tr>
+          <td>${p.bib}</td>
+          <td>${p.nama}</td>
+          <td>${p.pasukan}</td>
+          <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required></td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      html += `<button type="button" onclick="simpanFinal(${acaraId})">Simpan Keputusan Final</button>`;
+      html += '</form>';
+      document.getElementById('pesertaFinalDiv').innerHTML = html;
     }
-    let html = '<form id="formFinal">';
-    html += '能<table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
-    pesertaList.forEach((p, i) => {
-      html += `<tr>
-        <td>${p.bib}</td>
-        <td>${p.nama}</td>
-        <td>${p.pasukan}</td>
-        <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required></td>
-      </tr>`;
-    });
-    html += '</tbody></table>';
-    html += `<button type="button" onclick="simpanFinal(${acaraId})">Simpan Keputusan Final</button>`;
-    html += '</form>';
-    document.getElementById('pesertaFinalDiv').innerHTML = html;
+    // Papar keputusan sedia ada untuk final
+    displayExistingResults(acaraId, 'existingFinal', true);
   };
 
   window.simpanFinal = async function(acaraId) {
