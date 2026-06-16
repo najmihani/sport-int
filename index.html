@@ -485,7 +485,7 @@
     const result = await fetchAPI('verifyAdminPassword', { password: pwd });
     if (result.success === true) {
       // Gantikan URL admin.html dengan pautan Vercel anda
-      window.open('https://https://sport-int.vercel.app/admin.html', '_blank');
+      window.open('https://sport-int.vercel.app/admin.html', '_blank');
       modal.style.display = 'none';
       pwdInput.value = '';
       loginErrorSpan.innerText = '';
