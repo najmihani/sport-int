@@ -228,15 +228,30 @@
       width: 350px;
       text-align: center;
       box-shadow: 0 25px 40px -12px black;
+      position: relative;
     }
 
     .modal-content input {
       width: 100%;
-      padding: 12px;
-      margin: 20px 0;
+      padding: 12px 35px 12px 15px;
+      margin: 20px 0 10px 0;
       border: 1px solid #cbd5e1;
       border-radius: 50px;
       font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    .toggle-pwd {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #64748b;
     }
 
     .modal-content button {
@@ -248,12 +263,16 @@
       width: 100%;
       font-weight: bold;
       cursor: pointer;
+      margin-top: 5px;
     }
 
     .close-btn {
-      float: right;
-      font-size: 1.5rem;
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 1.8rem;
       cursor: pointer;
+      color: #94a3b8;
     }
 
     footer {
@@ -314,39 +333,44 @@
 <div id="adminModal" class="modal">
   <div class="modal-content">
     <span class="close-btn" id="closeModal">&times;</span>
-    <h3>🔐 Akses Pentadbir</h3>
-    <input type="password" id="adminPassword" placeholder="Kata laluan">
+    <h3><i class="fas fa-key"></i> Akses Pentadbir</h3>
+    <div class="password-wrapper">
+      <input type="password" id="adminPassword" placeholder="Kata laluan">
+      <i class="fas fa-eye toggle-pwd" id="togglePwdIcon" onclick="togglePasswordVisibility()"></i>
+    </div>
     <button id="submitPassword">Log Masuk</button>
     <div id="loginError" style="color:red; margin-top:10px; font-size:0.8rem;"></div>
   </div>
 </div>
 
 <script>
-  const API_BASE = 'https://script.google.com/macros/s/AKfycbx9OU7okr4L2FGuuUJdA_zdHqAe5J0DJG_D34abJdVWuDxCKTAOP_61oW43fYrJD0rp/exec'; // GANTIKAN dengan URL Apps Script anda
+  // ======================== SETTING ========================
+  // GANTIKAN URL INI DENGAN WEB APP APPS SCRIPT ANDA (AKHIRI DENGAN /exec)
+  const API_BASE = 'https://script.google.com/macros/s/AKfycbx9OU7okr4L2FGuuUJdA_zdHqAe5J0DJG_D34abJdVWuDxCKTAOP_61oW43fYrJD0rp/exec';
 
+  // Fungsi panggil API (GET)
   async function fetchAPI(action, params = {}) {
     let url = `${API_BASE}?action=${action}`;
     for (let key in params) {
-      if (params[key] !== undefined && params[key] !== null)
+      if (params[key] !== undefined && params[key] !== null) {
         url += `&${key}=${encodeURIComponent(params[key])}`;
+      }
     }
-    console.log("Calling:", url);
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      console.log("Response:", data);
       return data;
     } catch (err) {
-      console.error("API Error:", err);
+      console.error(`API Error [${action}]:`, err);
       return { error: err.message };
     }
   }
 
-  // ========== JADUAL ==========
+  // ========== 1. JADUAL KEHANJURAN ==========
   async function loadSchedule() {
     const tbody = document.getElementById('scheduleBody');
-    tbody.innerHTML = '<tr><td colspan="6">Memuatkan......</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6">Memuatkan jadual...</td></tr>';
     const data = await fetchAPI('getJadualKejohanan');
     if (data.error) {
       tbody.innerHTML = `<tr><td colspan="6">Gagal memuat jadual: ${data.error}</td></tr>`;
@@ -370,7 +394,7 @@
     tbody.innerHTML = html;
   }
 
-  // ========== ACARA & KEPUTUSAN ==========
+  // ========== 2. KEPUTUSAN ACARA ==========
   async function loadAcaraList() {
     const container = document.getElementById('acaraContainer');
     container.innerHTML = '<p>Memuatkan senarai acara...</p>';
@@ -390,7 +414,7 @@
       card.innerHTML = `
         <i class="fas fa-running"></i>
         <div class="info">
-          <strong>${acara.nama}</strong>
+          <strong>${escapeHtml(acara.nama)}</strong>
           <small>Klik untuk lihat keputusan</small>
         </div>
       `;
@@ -400,18 +424,19 @@
   }
 
   async function showKeputusanAcara(acaraId, acaraNama) {
-    const results = await fetchAPI('getKeputusanAcara', { acaraId });
     const detailDiv = document.getElementById('resultsDetail');
+    detailDiv.innerHTML = '<div class="table-wrapper"><p>Memuatkan...</p></div>';
+    const results = await fetchAPI('getKeputusanAcara', { acaraId });
     if (results.error) {
       detailDiv.innerHTML = `<div class="table-wrapper"><p>Ralat: ${results.error}</p></div>`;
       return;
     }
     if (!results || results.length === 0) {
-      detailDiv.innerHTML = `<div class="table-wrapper"><p>Tiada keputusan untuk ${acaraNama}</p></div>`;
+      detailDiv.innerHTML = `<div class="table-wrapper"><p>Tiada keputusan untuk ${escapeHtml(acaraNama)}</p></div>`;
       return;
     }
     let html = `<div class="table-wrapper">
-      <h3 style="padding:1rem 1rem 0 1rem;">${acaraNama}</h3>
+      <h3 style="padding:1rem 1rem 0 1rem;">${escapeHtml(acaraNama)}</h3>
       <table>
         <thead><tr><th>Bil</th><th>No Bib</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th></tr></thead>
         <tbody>`;
@@ -419,8 +444,8 @@
       html += `<tr>
         <td>${idx+1}</td>
         <td>${r.bib || '-'}</td>
-        <td>${r.nama || '-'}</td>
-        <td>${r.pasukan || '-'}</td>
+        <td>${escapeHtml(r.nama || '-')}</td>
+        <td>${escapeHtml(r.pasukan || '-')}</td>
         <td>${r.masa_jarak || '-'}</td>
         <td>${r.kedudukan || '-'}</td>
         <td>${r.pingat || '-'}</td>
@@ -431,40 +456,18 @@
     detailDiv.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // ========== LOGIN ADMIN DENGAN IKON MATA ==========
+  // ========== 3. ADMIN LOGIN (DENGAN IKON MATA) ==========
   const modal = document.getElementById('adminModal');
   const loginBtn = document.getElementById('adminLoginBtn');
   const closeModal = document.getElementById('closeModal');
   const submitPwd = document.getElementById('submitPassword');
   const pwdInput = document.getElementById('adminPassword');
-  const loginError = document.getElementById('loginError');
-
-  // Tambah ikon mata dalam modal (di dalam HTML modal perlu diubah)
-  // Saya akan ubah struktur modal di HTML nanti
+  const loginErrorSpan = document.getElementById('loginError');
 
   loginBtn.onclick = () => { modal.style.display = 'flex'; };
   closeModal.onclick = () => { modal.style.display = 'none'; };
   window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
 
-  submitPwd.onclick = async () => {
-    const pwd = pwdInput.value.trim();
-    if (!pwd) {
-      loginError.innerText = 'Sila masukkan kata laluan.';
-      return;
-    }
-    const result = await fetchAPI('verifyAdminPassword', { password: pwd });
-    if (result.success === true) {
-      // Redirect ke halaman admin (pastikan URL admin.html betul)
-      window.open('https://sistem-kejohanan.vercel.app/admin.html', '_blank');
-      modal.style.display = 'none';
-      pwdInput.value = '';
-      loginError.innerText = '';
-    } else {
-      loginError.innerText = 'Kata laluan salah.';
-    }
-  };
-
-  // Tambah fungsi toggle password
   function togglePasswordVisibility() {
     const type = pwdInput.getAttribute('type') === 'password' ? 'text' : 'password';
     pwdInput.setAttribute('type', type);
@@ -473,7 +476,25 @@
     icon.classList.toggle('fa-eye-slash');
   }
 
-  // ========== TAB SWITCH ==========
+  submitPwd.onclick = async () => {
+    const pwd = pwdInput.value.trim();
+    if (!pwd) {
+      loginErrorSpan.innerText = 'Sila masukkan kata laluan.';
+      return;
+    }
+    const result = await fetchAPI('verifyAdminPassword', { password: pwd });
+    if (result.success === true) {
+      // Gantikan URL admin.html dengan pautan Vercel anda
+      window.open('https://sistem-kejohanan.vercel.app/admin.html', '_blank');
+      modal.style.display = 'none';
+      pwdInput.value = '';
+      loginErrorSpan.innerText = '';
+    } else {
+      loginErrorSpan.innerText = 'Kata laluan salah.';
+    }
+  };
+
+  // ========== 4. TAB SWITCH ==========
   const tabBtns = document.querySelectorAll('.tab-btn');
   const panes = document.querySelectorAll('.tab-pane');
   tabBtns.forEach(btn => {
@@ -488,7 +509,18 @@
     });
   });
 
-  // Muat awal
+  // ========== UTILITY ==========
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // Mulakan muatan
   loadSchedule();
   loadAcaraList();
 </script>
