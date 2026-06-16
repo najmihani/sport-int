@@ -1,53 +1,318 @@
 <!DOCTYPE html>
-<html>
+<html lang="ms">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - Input Keputusan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    body { font-family: Arial; margin: 20px; }
-    .tab { overflow: hidden; border-bottom: 1px solid #ccc; }
-    .tab button { background-color: inherit; float: left; border: none; outline: none; cursor: pointer; padding: 10px 20px; transition: 0.3s; }
-    .tab button:hover { background-color: #ddd; }
-    .tab button.active { background-color: #4CAF50; color: white; }
-    .tabcontent { display: none; padding: 20px; border: 1px solid #ccc; border-top: none; }
-    table, th, td { border: 1px solid #ccc; border-collapse: collapse; padding: 8px; }
-    th { background-color: #f2f2f2; }
-    input, select { width: 100%; padding: 5px; box-sizing: border-box; }
-    button { margin-top: 10px; padding: 8px 16px; cursor: pointer; }
-    .success { color: green; margin-top: 10px; }
-    .error { color: red; }
-    .loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: white; padding: 20px; border: 1px solid #ccc; z-index: 1000; }
-    .edit-mode { background-color: #fff3e0; }
-    .delete-btn { background-color: #ff4444; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 4px; }
-    .edit-btn { background-color: #ffaa00; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 4px; }
-    .save-btn { background-color: #4CAF50; color: white; }
-    .existing-data { margin-top: 20px; border-top: 2px solid #ccc; padding-top: 10px; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      padding: 2rem 1.5rem;
+      color: #0f172a;
+    }
+
+    /* Container utama */
+    .admin-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+
+    h2 {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      padding: 1.2rem 2rem;
+      margin: 0;
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h2 i {
+      font-size: 1.8rem;
+    }
+
+    /* Tab styling */
+    .tab {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0 1.5rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .tab button {
+      background: transparent;
+      border: none;
+      padding: 1rem 1.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      font-family: inherit;
+    }
+
+    .tab button:hover {
+      color: #2a5298;
+      background: rgba(42,82,152,0.05);
+    }
+
+    .tab button.active {
+      color: #2a5298;
+      background: white;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .tab button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: #2a5298;
+      border-radius: 3px 3px 0 0;
+    }
+
+    /* Kandungan tab */
+    .tabcontent {
+      padding: 2rem;
+      background: white;
+    }
+
+    /* Label dan select */
+    label {
+      font-weight: 600;
+      color: #1e293b;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 1rem;
+      font-size: 0.95rem;
+      transition: 0.2s;
+      background: white;
+      font-family: inherit;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: #2a5298;
+      box-shadow: 0 0 0 3px rgba(42,82,152,0.2);
+    }
+
+    /* Jadual */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 600;
+      padding: 0.9rem 0.8rem;
+      text-align: center;
+    }
+
+    td {
+      padding: 0.8rem;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Butang */
+    button {
+      font-family: inherit;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .edit-btn, .delete-btn, .save-btn, .admin-btn {
+      padding: 0.4rem 0.9rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      margin: 0 4px;
+    }
+
+    .edit-btn {
+      background: #f59e0b;
+      color: white;
+    }
+    .edit-btn:hover { background: #d97706; transform: translateY(-1px); }
+
+    .delete-btn {
+      background: #ef4444;
+      color: white;
+    }
+    .delete-btn:hover { background: #dc2626; transform: translateY(-1px); }
+
+    .save-btn {
+      background: #10b981;
+      color: white;
+    }
+    .save-btn:hover { background: #059669; }
+
+    button[type="button"]:not(.edit-btn):not(.delete-btn):not(.save-btn) {
+      background: #2a5298;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: 500;
+    }
+    button[type="button"]:not(.edit-btn):not(.delete-btn):not(.save-btn):hover {
+      background: #1e3c72;
+      transform: translateY(-1px);
+    }
+
+    /* Form input masa */
+    form input[type="text"], form input[type="number"] {
+      width: 90px;
+      text-align: center;
+      padding: 0.4rem;
+      margin: 0 auto;
+    }
+
+    /* Status */
+    .success {
+      color: #10b981;
+      background: #ecfdf5;
+      padding: 0.6rem 1rem;
+      border-radius: 2rem;
+      margin-top: 1rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    .error {
+      color: #dc2626;
+      background: #fef2f2;
+      padding: 0.6rem 1rem;
+      border-radius: 2rem;
+      margin-top: 1rem;
+      font-weight: 500;
+    }
+
+    /* Keputusan sedia ada */
+    .existing-data {
+      margin-top: 2rem;
+      border-top: 2px dashed #cbd5e1;
+      padding-top: 1.5rem;
+    }
+    .existing-data h4 {
+      font-size: 1.1rem;
+      color: #1e293b;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Loading */
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      display: none;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: white;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .loading .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Responsif */
+    @media (max-width: 768px) {
+      body { padding: 1rem; }
+      .tabcontent { padding: 1rem; }
+      table, thead, tbody, th, td, tr { display: block; }
+      thead { display: none; }
+      tr { margin-bottom: 1rem; border: 1px solid #e2e8f0; border-radius: 1rem; }
+      td { display: flex; justify-content: space-between; align-items: center; text-align: right; padding: 0.6rem; }
+      td::before { content: attr(data-label); font-weight: 600; text-align: left; width: 40%; }
+      .edit-btn, .delete-btn { margin-top: 5px; }
+    }
   </style>
 </head>
 <body>
-<h2>Panel Admin Kejohanan</h2>
-<div class="tab">
-  <button class="tablinks" id="tabSA">Separuh Akhir</button>
-  <button class="tablinks" id="tabFinal">Final</button>
-</div>
+<div class="admin-container">
+  <h2><i class="fas fa-crown"></i> Panel Pentadbir Kejohanan</h2>
+  <div class="tab">
+    <button class="tablinks" id="tabSA">🏃 Separuh Akhir</button>
+    <button class="tablinks" id="tabFinal">🥇 Final</button>
+  </div>
 
-<div id="SeparuhAkhir" class="tabcontent">
-  <h3>Input Separuh Akhir</h3>
-  <label>Pilih Acara:</label> <select id="acaraSA" onchange="loadPesertaSA()"></select>
-  <div id="pesertaSADiv"></div>
-  <div id="statusSA" class="success"></div>
-  <div id="existingSA" class="existing-data"></div>
-</div>
+  <div id="SeparuhAkhir" class="tabcontent">
+    <h3><i class="fas fa-stopwatch"></i> Input Keputusan Separuh Akhir</h3>
+    <label>📋 Pilih Acara:</label>
+    <select id="acaraSA" onchange="loadPesertaSA()"></select>
+    <div id="pesertaSADiv"></div>
+    <div id="statusSA" class="success"></div>
+    <div id="existingSA" class="existing-data"></div>
+  </div>
 
-<div id="Final" class="tabcontent">
-  <h3>Input Final</h3>
-  <label>Pilih Acara Final:</label> <select id="acaraFinal" onchange="loadPesertaFinal()"></select>
-  <div id="pesertaFinalDiv"></div>
-  <div id="statusFinal" class="success"></div>
-  <div id="existingFinal" class="existing-data"></div>
-</div>
+  <div id="Final" class="tabcontent">
+    <h3><i class="fas fa-medal"></i> Input Keputusan Final</h3>
+    <label>🏆 Pilih Acara Final:</label>
+    <select id="acaraFinal" onchange="loadPesertaFinal()"></select>
+    <div id="pesertaFinalDiv"></div>
+    <div id="statusFinal" class="success"></div>
+    <div id="existingFinal" class="existing-data"></div>
+  </div>
 
-<div class="loading" id="loading">Memproses...</div>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div>Memproses...</div>
+  </div>
+</div>
 
 <script>
   // ================= KONFIGURASI =================
@@ -100,7 +365,7 @@
       container.innerHTML = '<p><em>Tiada keputusan sedia ada.</em></p>';
       return;
     }
-    let html = '<h4>Keputusan Sedia Ada:</h4><table><thead><tr><th>Bil</th><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th><th>Tindakan</th></tr></thead><tbody>';
+    let html = '<h4><i class="fas fa-database"></i> Keputusan Sedia Ada:</h4>能<table>\n<thead>\n<tr>\n<th>Bil</th><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th><th>Tindakan</th>\n</tr>\n</thead>\n<tbody>';
     results.forEach((r, idx) => {
       html += `<tr id="row-${r.keputusan_id || idx}">
         <td>${idx+1}</td>
@@ -111,8 +376,8 @@
         <td><span class="val-ked">${r.kedudukan}</span></td>
         <td><span class="val-pingat">${r.pingat || '-'}</span></td>
         <td>
-          <button class="edit-btn" data-id="${r.keputusan_id}" data-masa="${r.masa_jarak}" data-ked="${r.kedudukan}" data-pingat="${r.pingat}" onclick="editRecord('${r.keputusan_id}', this)">Edit</button>
-          <button class="delete-btn" onclick="deleteRecord('${r.keputusan_id}', ${acaraId}, '${containerId}')">Padam</button>
+          <button class="edit-btn" data-id="${r.keputusan_id}" data-masa="${r.masa_jarak}" data-ked="${r.kedudukan}" data-pingat="${r.pingat}" onclick="editRecord('${r.keputusan_id}', this)"><i class="fas fa-edit"></i> Edit</button>
+          <button class="delete-btn" onclick="deleteRecord('${r.keputusan_id}', ${acaraId}, '${containerId}')"><i class="fas fa-trash-alt"></i> Padam</button>
         </td>
       </tr>`;
     });
@@ -130,13 +395,12 @@
     const currentKed = kedSpan.innerText;
     const currentPingat = pingatSpan.innerText;
     
-    // Ganti dengan input
-    masaSpan.innerHTML = `<input type="text" id="edit-masa" value="${currentMasa}" style="width:80px;">`;
-    kedSpan.innerHTML = `<input type="number" id="edit-ked" value="${currentKed}" style="width:60px;">`;
-    pingatSpan.innerHTML = `<input type="text" id="edit-pingat" value="${currentPingat !== '-' ? currentPingat : ''}" style="width:80px;" placeholder="Emas/Perak/Gangsa">`;
+    masaSpan.innerHTML = `<input type="text" id="edit-masa" value="${currentMasa}" style="width:90px;">`;
+    kedSpan.innerHTML = `<input type="number" id="edit-ked" value="${currentKed}" style="width:70px;">`;
+    pingatSpan.innerHTML = `<input type="text" id="edit-pingat" value="${currentPingat !== '-' ? currentPingat : ''}" style="width:90px;" placeholder="Emas/Perak/Gangsa">`;
     
     const actionCell = row.cells[7];
-    actionCell.innerHTML = `<button class="save-btn" onclick="saveEdit('${keputusanId}', this)">Simpan</button> <button onclick="cancelEdit('${keputusanId}', this)">Batal</button>`;
+    actionCell.innerHTML = `<button class="save-btn" onclick="saveEdit('${keputusanId}', this)"><i class="fas fa-save"></i> Simpan</button> <button onclick="cancelEdit('${keputusanId}', this)"><i class="fas fa-times"></i> Batal</button>`;
   };
 
   window.saveEdit = async function(keputusanId, btn) {
@@ -160,7 +424,6 @@
       alert('Gagal kemas kini: ' + result.error);
     } else {
       alert('Berjaya dikemas kini');
-      // Refresh paparan keputusan sedia ada
       const acaraSelect = document.querySelector('.tabcontent.active select');
       const acaraId = acaraSelect.value;
       const containerId = acaraSelect.closest('.tabcontent').querySelector('.existing-data').id;
@@ -187,7 +450,6 @@
     } else {
       alert('Rekod berjaya dipadam');
       displayExistingResults(acaraId, containerId, containerId.includes('Final'));
-      // Jika acara yang dipadam adalah yang sedang dalam borang input, refresh juga borang input
       const acaraSelect = document.getElementById(containerId.includes('SA') ? 'acaraSA' : 'acaraFinal');
       if (acaraSelect.value == acaraId) {
         if (containerId.includes('SA')) loadPesertaSA();
@@ -227,23 +489,20 @@
     } else if (!pesertaList.length) {
       document.getElementById('pesertaSADiv').innerHTML = '<p>Tiada peserta berdaftar untuk acara ini.</p>';
     } else {
-      let html = '<form id="formSA">';
-      html += '能<tr><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
+      let html = '<form id="formSA">能<table>\n<thead>\n<tr>\n<th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th>\n</tr>\n</thead>\n<tbody>';
       pesertaList.forEach((p, i) => {
         html += `<tr>
           <td>${p.bib}</td>
           <td>${p.nama}</td>
           <td>${p.pasukan}</td>
-          <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required></td>
+          <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required placeholder="cth: 11.20"></td>
         </tr>`;
       });
-      html += '</tbody></table>';
-      html += '<label>Pusingan: <input type="text" name="pusingan" value="Separuh Akhir 1"></label><br>';
-      html += `<button type="button" onclick="simpanSA(${acaraId}, ${kuota})">Simpan & Ranking</button>`;
+      html += '</tbody></table><br><label>Pusingan: <input type="text" name="pusingan" value="Separuh Akhir 1"></label><br><br>';
+      html += `<button type="button" onclick="simpanSA(${acaraId}, ${kuota})"><i class="fas fa-save"></i> Simpan & Ranking</button>`;
       html += '</form>';
       document.getElementById('pesertaSADiv').innerHTML = html;
     }
-    // Papar keputusan sedia ada
     displayExistingResults(acaraId, 'existingSA', false);
   };
 
@@ -281,7 +540,6 @@
       statusDiv.innerHTML = `<span class="error">Ralat: ${result.error}</span>`;
     } else {
       statusDiv.innerHTML = `<span class="success">${result.message || 'Berjaya disimpan'}</span>`;
-      // Refresh borang dan paparan sedia ada
       loadPesertaSA();
     }
     setTimeout(() => statusDiv.innerHTML = '', 3000);
@@ -322,22 +580,20 @@
     } else if (!pesertaList.length) {
       document.getElementById('pesertaFinalDiv').innerHTML = '<p>Tiada peserta layak ke final.</p>';
     } else {
-      let html = '<form id="formFinal">';
-      html += '能<tr><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
+      let html = '<form id="formFinal">能<table>\n<thead>\n<tr>\n<th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th>\n</tr>\n</thead>\n<tbody>';
       pesertaList.forEach((p, i) => {
         html += `<tr>
           <td>${p.bib}</td>
           <td>${p.nama}</td>
           <td>${p.pasukan}</td>
-          <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required></td>
+          <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required placeholder="cth: 10.95"></td>
         </tr>`;
       });
-      html += '</tbody></table>';
-      html += `<button type="button" onclick="simpanFinal(${acaraId})">Simpan Keputusan Final</button>`;
+      html += '</tbody></table><br>';
+      html += `<button type="button" onclick="simpanFinal(${acaraId})"><i class="fas fa-save"></i> Simpan Keputusan Final</button>`;
       html += '</form>';
       document.getElementById('pesertaFinalDiv').innerHTML = html;
     }
-    // Papar keputusan sedia ada untuk final
     displayExistingResults(acaraId, 'existingFinal', true);
   };
 
@@ -369,7 +625,7 @@
       statusDiv.innerHTML = `<span class="error">Ralat: ${result.error}</span>`;
     } else {
       statusDiv.innerHTML = `<span class="success">${result.message || 'Berjaya disimpan'}</span>`;
-      loadPesertaFinal(); // refresh
+      loadPesertaFinal();
     }
     setTimeout(() => statusDiv.innerHTML = '', 3000);
   };
