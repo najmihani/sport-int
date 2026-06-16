@@ -113,7 +113,57 @@
       box-shadow: 0 0 0 3px rgba(42,82,152,0.2);
     }
 
-    table {
+    /* Jadual input peserta yang lebih cantik */
+    .input-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .input-table th {
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 600;
+      padding: 1rem 0.8rem;
+      text-align: center;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .input-table td {
+      padding: 0.8rem;
+      text-align: center;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+
+    .input-table tbody tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
+    .input-table tbody tr:hover {
+      background-color: #f1f5f9;
+    }
+
+    .input-table input {
+      width: 100px;
+      padding: 0.5rem;
+      text-align: center;
+      border-radius: 2rem;
+      border: 1px solid #cbd5e1;
+      transition: 0.2s;
+    }
+
+    .input-table input:focus {
+      border-color: #2a5298;
+      box-shadow: 0 0 0 2px rgba(42,82,152,0.2);
+      outline: none;
+    }
+
+    /* Jadual keputusan sedia ada */
+    .data-table {
       width: 100%;
       border-collapse: collapse;
       margin: 1rem 0;
@@ -123,7 +173,7 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    th {
+    .data-table th {
       background: #f1f5f9;
       color: #0f172a;
       font-weight: 600;
@@ -131,17 +181,18 @@
       text-align: center;
     }
 
-    td {
+    .data-table td {
       padding: 0.8rem;
       border-bottom: 1px solid #e2e8f0;
       text-align: center;
       vertical-align: middle;
     }
 
-    tr:hover td {
+    .data-table tr:hover td {
       background: #f8fafc;
     }
 
+    /* Butang */
     button {
       font-family: inherit;
       font-weight: 500;
@@ -187,29 +238,20 @@
       transform: translateY(-1px);
     }
 
-    form input[type="text"], form input[type="number"] {
-      width: 90px;
-      text-align: center;
-      padding: 0.4rem;
-      margin: 0 auto;
-    }
-
-    .success {
-      color: #10b981;
-      background: #ecfdf5;
+    .status {
+      margin-top: 1rem;
       padding: 0.6rem 1rem;
       border-radius: 2rem;
-      margin-top: 1rem;
       font-weight: 500;
       text-align: center;
+    }
+    .success {
+      background: #ecfdf5;
+      color: #10b981;
     }
     .error {
-      color: #dc2626;
       background: #fef2f2;
-      padding: 0.6rem 1rem;
-      border-radius: 2rem;
-      margin-top: 1rem;
-      font-weight: 500;
+      color: #dc2626;
     }
 
     .existing-data {
@@ -263,11 +305,11 @@
     @media (max-width: 768px) {
       body { padding: 1rem; }
       .tabcontent { padding: 1rem; }
-      table, thead, tbody, th, td, tr { display: block; }
-      thead { display: none; }
-      tr { margin-bottom: 1rem; border: 1px solid #e2e8f0; border-radius: 1rem; }
-      td { display: flex; justify-content: space-between; align-items: center; text-align: right; padding: 0.6rem; }
-      td::before { content: attr(data-label); font-weight: 600; text-align: left; width: 40%; }
+      .input-table, .data-table, thead, tbody, th, td, tr { display: block; }
+      .input-table thead, .data-table thead { display: none; }
+      .input-table tr, .data-table tr { margin-bottom: 1rem; border: 1px solid #e2e8f0; border-radius: 1rem; }
+      .input-table td, .data-table td { display: flex; justify-content: space-between; align-items: center; text-align: right; padding: 0.6rem; }
+      .input-table td::before, .data-table td::before { content: attr(data-label); font-weight: 600; text-align: left; width: 40%; }
       .edit-acara-btn, .delete-acara-btn { margin-top: 5px; }
       .action-buttons { margin-top: 1rem; }
     }
@@ -286,7 +328,7 @@
     <label>📋 Pilih Acara:</label>
     <select id="acaraSA" onchange="loadPesertaSA()"></select>
     <div id="pesertaSADiv"></div>
-    <div id="statusSA" class="success"></div>
+    <div id="statusSA" class="status success"></div>
     <div id="existingSA" class="existing-data"></div>
   </div>
 
@@ -295,7 +337,7 @@
     <label>🏆 Pilih Acara Final:</label>
     <select id="acaraFinal" onchange="loadPesertaFinal()"></select>
     <div id="pesertaFinalDiv"></div>
-    <div id="statusFinal" class="success"></div>
+    <div id="statusFinal" class="status success"></div>
     <div id="existingFinal" class="existing-data"></div>
   </div>
 
@@ -342,9 +384,9 @@
 
   document.getElementById('tabSA').onclick = () => openTab('SeparuhAkhir');
   document.getElementById('tabFinal').onclick = () => openTab('Final');
-  openTab('SeparuhAkhir'); // default
+  openTab('SeparuhAkhir');
 
-  // ================= PAPAR KEPUTUSAN SEDIA ADA (dengan edit/padam keseluruhan acara) =================
+  // ================= PAPAR KEPUTUSAN SEDIA ADA =================
   async function displayExistingResults(acaraId, containerId, isFinal = false) {
     const container = document.getElementById(containerId);
     if (!acaraId) {
@@ -356,7 +398,6 @@
       container.innerHTML = '<p><em>Tiada keputusan sedia ada.</em></p>';
       return;
     }
-    // Butang untuk edit/padam keseluruhan acara
     let html = `<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
                   <h4><i class="fas fa-database"></i> Keputusan Sedia Ada:</h4>
                   <div class="action-buttons">
@@ -364,17 +405,17 @@
                     <button class="delete-acara-btn" onclick="deleteWholeAcara('${acaraId}', '${containerId}', ${isFinal})"><i class="fas fa-trash-alt"></i> Padam Semua Rekod Acara</button>
                   </div>
                 </div>`;
-    html += '<table><thead>\n<tr>\n<th>Bil</th><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th>\n</tr>\n</thead>\n<tbody>';
+    html += '<table class="data-table"><thead><tr><th>Bil</th><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan</th><th>Pingat</th></tr></thead><tbody>';
     results.forEach((r, idx) => {
       html += `<tr>
-        <td>${idx+1}</td>
-        <td>${r.bib}</td>
-        <td>${r.nama}</td>
-        <td>${r.pasukan}</td>
-        <td>${r.masa_jarak}</td>
-        <td>${r.kedudukan}</td>
-        <td>${r.pingat || '-'}</td>
-       </tr>`;
+        <td data-label="Bil">${idx+1}</td>
+        <td data-label="BIB">${r.bib}</td>
+        <td data-label="Nama">${r.nama}</td>
+        <td data-label="Pasukan">${r.pasukan}</td>
+        <td data-label="Masa/Jarak">${r.masa_jarak}</td>
+        <td data-label="Kedudukan">${r.kedudukan}</td>
+        <td data-label="Pingat">${r.pingat || '-'}</td>
+      </tr>`;
     });
     html += '</tbody></table>';
     container.innerHTML = html;
@@ -382,54 +423,35 @@
 
   // ================= EDIT KESELURUHAN ACARA =================
   window.editWholeAcara = async function(acaraId, isFinal) {
-    // Dapatkan data sedia ada
     const results = await fetchAPI('getKeputusanAcara', { acaraId });
     if (results.error || !results.length) {
       alert('Tiada data untuk diedit.');
       return;
     }
-    // Buat borang input dengan data sedia ada (sama seperti borang input biasa)
-    const pesertaData = results.map(r => ({
-      pendaftaran_id: null, // tidak diperlukan untuk edit? Kita perlu pendaftaran_id untuk update. Kita kena dapatkan dari sumber asal.
-      nama: r.nama,
-      bib: r.bib,
-      pasukan: r.pasukan,
-      masa_jarak: r.masa_jarak,
-      kedudukan: r.kedudukan,
-      pingat: r.pingat
-    }));
-    // Untuk edit, kita perlu ada pendaftaran_id. Kita boleh dapatkan dari fetchAPI('getPesertaUntukAcara') atau simpan dari awal.
-    // Lebih mudah: Kita gunakan API `getPesertaUntukAcara` untuk dapatkan pendaftaran_id, kemudian gabungkan dengan masa sedia ada.
     const pesertaAsal = await fetchAPI('getPesertaUntukAcara', { acaraId });
     if (pesertaAsal.error || !pesertaAsal.length) {
       alert('Gagal mendapatkan senarai pendaftaran.');
       return;
     }
-    // Gabungkan masa sedia ada ke dalam pesertaAsal
     const masaMap = {};
     results.forEach(r => { masaMap[r.nama] = { masa: r.masa_jarak, ked: r.kedudukan, pingat: r.pingat }; });
-    let formHtml = '<form id="editForm">';
-    formHtml += '<td><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan (auto selepas simpan)</th><th>Pingat</th></tr></thead><tbody>';
+    let formHtml = '<form id="editForm"><table class="input-table"><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th><th>Kedudukan (auto)</th><th>Pingat</th></tr></thead><tbody>';
     pesertaAsal.forEach((p, i) => {
       const existing = masaMap[p.nama] || {};
       formHtml += `<tr>
-        <td>${p.bib}</td>
-        <td>${p.nama}</td>
-        <td>${p.pasukan}</td>
-        <td><input type="text" name="masa_${i}" value="${existing.masa || ''}" placeholder="cth: 11.20" required></td>
-        <td><input type="number" name="ked_${i}" value="${existing.ked || ''}" placeholder="Auto" style="width:70px;"></td>
-        <td><input type="text" name="pingat_${i}" value="${existing.pingat || ''}" placeholder="Emas/Perak/Gangsa"></td>
+        <td data-label="BIB">${p.bib}</td>
+        <td data-label="Nama">${p.nama}</td>
+        <td data-label="Pasukan">${p.pasukan}</td>
+        <td data-label="Masa/Jarak"><input type="text" name="masa_${i}" value="${existing.masa || ''}" placeholder="cth: 11.20" required></td>
+        <td data-label="Kedudukan"><input type="number" name="ked_${i}" value="${existing.ked || ''}" placeholder="Auto" style="width:80px;"></td>
+        <td data-label="Pingat"><input type="text" name="pingat_${i}" value="${existing.pingat || ''}" placeholder="Emas/Perak/Gangsa"></td>
         <input type="hidden" name="pendaftaran_${i}" value="${p.pendaftaran_id}">
         <input type="hidden" name="nama_${i}" value="${p.nama}">
       </tr>`;
     });
-    formHtml += '</tbody></table>';
-    formHtml += `<br><button type="button" onclick="submitEditAcara('${acaraId}', ${isFinal})"><i class="fas fa-save"></i> Simpan Semua Perubahan</button>`;
-    formHtml += '</form>';
-    // Gantikan pesertaSADiv atau pesertaFinalDiv dengan borang edit
+    formHtml += '</tbody></table><br><button type="button" onclick="submitEditAcara(\'' + acaraId + '\', ' + isFinal + ')"><i class="fas fa-save"></i> Simpan Semua Perubahan</button></form>';
     if (isFinal) {
       document.getElementById('pesertaFinalDiv').innerHTML = formHtml;
-      // Sembunyikan bahagian existing sementara
       document.getElementById('existingFinal').style.display = 'none';
     } else {
       document.getElementById('pesertaSADiv').innerHTML = formHtml;
@@ -453,25 +475,19 @@
         pendaftaran_id: form.querySelector(`input[name="pendaftaran_${i}"]`).value,
         nama: form.querySelector(`input[name="nama_${i}"]`).value,
         masa_jarak: masa,
-        kedudukan: kedInput ? parseInt(kedInput) : null, // jika user isi, guna; jika tidak, sistem akan kira ranking
+        kedudukan: kedInput ? parseInt(kedInput) : null,
         pingat: pingatInput || ''
       });
     }
     showLoading(true);
-    // Panggil API updateKeputusanAcara (keseluruhan)
-    const result = await fetchAPI('updateKeputusanAcara', {
-      acaraId: acaraId,
-      isFinal: isFinal,
-      pesertaData: pesertaData
-    });
+    const result = await fetchAPI('updateKeputusanAcara', { acaraId: acaraId, isFinal: isFinal, pesertaData: pesertaData });
     showLoading(false);
     if (result.error) {
       alert('Gagal kemas kini: ' + result.error);
     } else {
       alert('Berjaya dikemas kini');
-      // Refresh borang asal
       if (isFinal) {
-        document.getElementById('pesertaFinalDiv').innerHTML = ''; // kosongkan
+        document.getElementById('pesertaFinalDiv').innerHTML = '';
         document.getElementById('existingFinal').style.display = 'block';
         loadPesertaFinal();
       } else {
@@ -493,7 +509,6 @@
     } else {
       alert('Semua rekod keputusan untuk acara ini berjaya dipadam.');
       displayExistingResults(acaraId, containerId, isFinal);
-      // Refresh juga borang input jika ada
       if (containerId.includes('SA')) {
         if (document.getElementById('acaraSA').value == acaraId) loadPesertaSA();
       } else {
@@ -502,7 +517,7 @@
     }
   };
 
-  // ================= SEPARUH AKHIR (tidak berubah) =================
+  // ================= SEPARUH AKHIR =================
   async function loadAcaraSA() {
     const list = await fetchAPI('getSeparuhAkhirAcara');
     const sel = document.getElementById('acaraSA');
@@ -533,16 +548,16 @@
     } else if (!pesertaList.length) {
       document.getElementById('pesertaSADiv').innerHTML = '<p>Tiada peserta berdaftar untuk acara ini.</p>';
     } else {
-      let html = '<form id="formSA"></table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
+      let html = '<form id="formSA"><table class="input-table"><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
       pesertaList.forEach((p, i) => {
         html += `<tr>
-          <td>${p.bib}</td>
-          <td>${p.nama}</td>
-          <td>${p.pasukan}</td>
-          <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required placeholder="cth: 11.20"></td>
+          <td data-label="BIB">${p.bib}</td>
+          <td data-label="Nama">${p.nama}</td>
+          <td data-label="Pasukan">${p.pasukan}</td>
+          <td data-label="Masa/Jarak"><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required placeholder="cth: 11.20"></td>
         </tr>`;
       });
-      html += '</tbody></table><br><label>Pusingan: <input type="text" name="pusingan" value="Separuh Akhir 1"></label><br><br>';
+      html += '</tbody></table><label>Pusingan: <input type="text" name="pusingan" value="Separuh Akhir 1"></label><br><br>';
       html += `<button type="button" onclick="simpanSA(${acaraId}, ${kuota})"><i class="fas fa-save"></i> Simpan & Ranking</button>`;
       html += '</form>';
       document.getElementById('pesertaSADiv').innerHTML = html;
@@ -572,12 +587,7 @@
       return;
     }
     showLoading(true);
-    const result = await fetchAPI('simpanSeparuhAkhir', {
-      acaraId: acaraId,
-      pusingan: pusingan,
-      pesertaData: pesertaData,
-      kuotaFinal: kuota
-    });
+    const result = await fetchAPI('simpanSeparuhAkhir', { acaraId: acaraId, pusingan: pusingan, pesertaData: pesertaData, kuotaFinal: kuota });
     showLoading(false);
     const statusDiv = document.getElementById('statusSA');
     if (result.error) {
@@ -589,7 +599,7 @@
     setTimeout(() => statusDiv.innerHTML = '', 3000);
   };
 
-  // ================= FINAL (tidak berubah) =================
+  // ================= FINAL =================
   async function loadAcaraFinal() {
     const list = await fetchAPI('getFinalAcara');
     const sel = document.getElementById('acaraFinal');
@@ -624,13 +634,13 @@
     } else if (!pesertaList.length) {
       document.getElementById('pesertaFinalDiv').innerHTML = '<p>Tiada peserta layak ke final.</p>';
     } else {
-      let html = '<form id="formFinal"></table><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
+      let html = '<form id="formFinal"><table class="input-table"><thead><tr><th>BIB</th><th>Nama</th><th>Pasukan</th><th>Masa/Jarak</th></tr></thead><tbody>';
       pesertaList.forEach((p, i) => {
         html += `<tr>
-          <td>${p.bib}</td>
-          <td>${p.nama}</td>
-          <td>${p.pasukan}</td>
-          <td><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required placeholder="cth: 10.95"></td>
+          <td data-label="BIB">${p.bib}</td>
+          <td data-label="Nama">${p.nama}</td>
+          <td data-label="Pasukan">${p.pasukan}</td>
+          <td data-label="Masa/Jarak"><input type="text" name="masa_${i}" data-pendaftaran="${p.pendaftaran_id}" data-nama="${p.nama}" required placeholder="cth: 10.95"></td>
         </tr>`;
       });
       html += '</tbody></table><br>';
@@ -658,11 +668,7 @@
       });
     }
     showLoading(true);
-    const result = await fetchAPI('simpanFinal', {
-      acaraFinalId: acaraId,
-      pusingan: 'Final',
-      pesertaData: pesertaData
-    });
+    const result = await fetchAPI('simpanFinal', { acaraFinalId: acaraId, pusingan: 'Final', pesertaData: pesertaData });
     showLoading(false);
     const statusDiv = document.getElementById('statusFinal');
     if (result.error) {
@@ -674,7 +680,6 @@
     setTimeout(() => statusDiv.innerHTML = '', 3000);
   };
 
-  // Inisialisasi
   loadAcaraSA();
   loadAcaraFinal();
 </script>
